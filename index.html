@@ -14,569 +14,154 @@
     --surface2: #1a1a24;
     --border: #2a2a3a;
     --accent: #c8f135;
-    --accent2: #4df0b0;
-    --accent3: #f0854d;
-    --red: #ff4d6d;
-    --text: #e8e8f0;
-    --muted: #6b6b80;
     --win: #4df0b0;
     --loss: #ff4d6d;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
   }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; min-height:100vh; overflow-x:hidden; }
 
-- { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-background: var(–bg);
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
-min-height: 100vh;
-overflow-x: hidden;
-}
-
-/* NAV */
 nav {
-position: fixed;
-top: 0; left: 0; right: 0;
-z-index: 100;
-background: rgba(10,10,15,0.85);
-backdrop-filter: blur(12px);
-border-bottom: 1px solid var(–border);
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 0 2rem;
-height: 56px;
+position:fixed; top:0; left:0; right:0; z-index:100;
+background:rgba(10,10,15,0.9); backdrop-filter:blur(12px);
+border-bottom:1px solid var(–border);
+display:flex; align-items:center; justify-content:space-between;
+padding:0 1.5rem; height:54px;
 }
+.nav-logo { font-family:‘Syne’,sans-serif; font-weight:800; font-size:1.1rem; color:var(–accent); }
+.nav-tabs { display:flex; background:var(–surface); border:1px solid var(–border); border-radius:8px; overflow:hidden; }
+.nav-tab { padding:0.4rem 1rem; font-family:‘DM Mono’,monospace; font-size:0.72rem; color:var(–muted); cursor:pointer; border:none; background:transparent; transition:all 0.2s; letter-spacing:0.05em; }
+.nav-tab.active { background:var(–accent); color:#000; font-weight:500; }
+.nav-right { display:flex; align-items:center; gap:0.75rem; }
+.update-time { font-size:0.68rem; color:var(–muted); }
+.btn-refresh { background:var(–surface2); border:1px solid var(–border); color:var(–text); padding:0.3rem 0.75rem; border-radius:6px; font-family:‘DM Mono’,monospace; font-size:0.72rem; cursor:pointer; transition:all 0.2s; }
+.btn-refresh:hover { border-color:var(–accent); color:var(–accent); }
 
-.nav-logo {
-font-family: ‘Syne’, sans-serif;
-font-weight: 800;
-font-size: 1.1rem;
-color: var(–accent);
-letter-spacing: -0.02em;
+main { padding-top:54px; }
+.page { display:none; padding:1.5rem; max-width:1400px; margin:0 auto; }
+.page.active { display:block; }
+
+.section-title { font-family:‘Syne’,sans-serif; font-size:0.65rem; font-weight:600; letter-spacing:0.15em; color:var(–muted); text-transform:uppercase; margin-bottom:1rem; margin-top:1.5rem; }
+.section-title:first-child { margin-top:0; }
+
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1px; background:var(–border); border:1px solid var(–border); border-radius:12px; overflow:hidden; margin-bottom:1.5rem; }
+.stat-card { background:var(–surface); padding:1.25rem 1.5rem; transition:background 0.2s; }
+.stat-card:hover { background:var(–surface2); }
+.stat-label { font-size:0.62rem; color:var(–muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.4rem; }
+.stat-value { font-family:‘Syne’,sans-serif; font-size:1.6rem; font-weight:700; line-height:1; margin-bottom:0.2rem; }
+.stat-sub { font-size:0.62rem; color:var(–muted); }
+.positive { color:var(–win); }
+.negative { color:var(–loss); }
+.neutral { color:var(–text); }
+.accent { color:var(–accent); }
+
+.filters { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem; align-items:center; }
+.filter-label { font-size:0.62rem; color:var(–muted); letter-spacing:0.08em; }
+select, input[type=date], input[type=number] {
+background:var(–surface); border:1px solid var(–border); color:var(–text);
+padding:0.35rem 0.7rem; border-radius:6px; font-family:‘DM Mono’,monospace;
+font-size:0.72rem; outline:none; cursor:pointer; transition:border-color 0.2s;
 }
+select:focus, input:focus { border-color:var(–accent); }
+.btn-ghost { background:transparent; border:1px solid var(–border); color:var(–muted); padding:0.35rem 0.85rem; border-radius:6px; font-family:‘DM Mono’,monospace; font-size:0.72rem; cursor:pointer; transition:all 0.2s; }
+.btn-ghost:hover { border-color:var(–accent); color:var(–accent); }
+.btn { background:var(–accent); color:#000; border:none; padding:0.4rem 1rem; border-radius:6px; font-family:‘DM Mono’,monospace; font-size:0.72rem; font-weight:500; cursor:pointer; }
+.btn:hover { opacity:0.85; }
 
-.nav-tabs {
-display: flex;
-gap: 0;
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 8px;
-overflow: hidden;
-}
+.charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.5rem; }
+.chart-card { background:var(–surface); border:1px solid var(–border); border-radius:12px; padding:1.25rem; }
+.chart-card.full-width { grid-column:1/-1; }
+.chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+.chart-title { font-family:‘Syne’,sans-serif; font-size:0.82rem; font-weight:600; }
+.tab-switch { display:flex; background:var(–surface2); border:1px solid var(–border); border-radius:6px; overflow:hidden; }
+.tab-btn { padding:0.22rem 0.6rem; font-size:0.62rem; font-family:‘DM Mono’,monospace; color:var(–muted); background:transparent; border:none; cursor:pointer; transition:all 0.2s; }
+.tab-btn.active { background:var(–accent); color:#000; }
+.chart-wrap { position:relative; height:200px; }
 
-.nav-tab {
-padding: 0.4rem 1rem;
-font-family: ‘DM Mono’, monospace;
-font-size: 0.75rem;
-color: var(–muted);
-cursor: pointer;
-border: none;
-background: transparent;
-transition: all 0.2s;
-letter-spacing: 0.05em;
-}
+.filtered-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(–border); border:1px solid var(–border); border-radius:12px; overflow:hidden; margin-bottom:1.5rem; }
+.f-stat { background:var(–surface2); padding:1.1rem 1.25rem; }
 
-.nav-tab.active {
-background: var(–accent);
-color: #000;
-font-weight: 500;
-}
+.table-wrap { background:var(–surface); border:1px solid var(–border); border-radius:12px; overflow:hidden; }
+table { width:100%; border-collapse:collapse; font-size:0.72rem; }
+thead { background:var(–surface2); border-bottom:1px solid var(–border); }
+th { padding:0.7rem 1rem; text-align:left; font-size:0.62rem; letter-spacing:0.08em; color:var(–muted); font-weight:400; white-space:nowrap; cursor:pointer; user-select:none; }
+th:hover { color:var(–accent); }
+td { padding:0.7rem 1rem; border-bottom:1px solid rgba(42,42,58,0.4); vertical-align:middle; white-space:nowrap; }
+tr:last-child td { border-bottom:none; }
+tbody tr { cursor:pointer; transition:background 0.15s; }
+tbody tr:hover { background:var(–surface2); }
 
-.nav-right {
-display: flex;
-align-items: center;
-gap: 1rem;
-}
+.badge { display:inline-block; padding:0.12rem 0.45rem; border-radius:4px; font-size:0.62rem; font-weight:500; letter-spacing:0.05em; }
+.badge-buy { background:rgba(77,240,176,0.15); color:var(–win); }
+.badge-sell { background:rgba(255,77,109,0.15); color:var(–loss); }
+.badge-type { background:var(–surface2); color:var(–muted); border:1px solid var(–border); }
 
-.update-time {
-font-size: 0.7rem;
-color: var(–muted);
-}
+.expand-row { display:none; }
+.expand-row.open { display:table-row; }
+.expand-content { padding:1.5rem; background:var(–surface2); border-bottom:1px solid var(–border); }
+.expand-meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:0.75rem; margin-bottom:1.5rem; }
+.expand-meta-item .label { font-size:0.58rem; color:var(–muted); margin-bottom:0.2rem; }
+.expand-meta-item .val { font-size:0.78rem; }
+.expand-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.expand-section-title { font-size:0.62rem; color:var(–muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.75rem; }
+.expand-text { font-size:0.78rem; line-height:1.7; color:var(–text); white-space:pre-wrap; }
+.expand-imgs { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem; }
+.expand-img { width:130px; height:85px; object-fit:cover; border-radius:6px; border:1px solid var(–border); cursor:pointer; transition:transform 0.2s; }
+.expand-img:hover { transform:scale(1.05); }
 
-.btn-refresh {
-background: var(–surface2);
-border: 1px solid var(–border);
-color: var(–text);
-padding: 0.35rem 0.8rem;
-border-radius: 6px;
-font-family: ‘DM Mono’, monospace;
-font-size: 0.75rem;
-cursor: pointer;
-transition: all 0.2s;
-}
-.btn-refresh:hover { border-color: var(–accent); color: var(–accent); }
+.lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; justify-content:center; align-items:center; }
+.lightbox.open { display:flex; }
+.lightbox img { max-width:92vw; max-height:92vh; border-radius:8px; }
+.lightbox-close { position:absolute; top:1rem; right:1.5rem; font-size:2rem; color:#fff; cursor:pointer; background:none; border:none; }
 
-/* MAIN */
-main {
-padding-top: 56px;
-min-height: 100vh;
-}
+.heatmap-scroll { overflow-x:auto; }
+.heatmap-grid { display:grid; grid-template-columns:40px repeat(24,1fr); gap:2px; min-width:600px; font-size:0.55rem; }
+.heatmap-header { height:18px; display:flex; align-items:center; justify-content:center; color:var(–muted); font-size:0.52rem; }
+.heatmap-cell { height:26px; border-radius:3px; background:var(–surface2); display:flex; align-items:center; justify-content:center; color:var(–muted); cursor:default; position:relative; transition:transform 0.1s; }
+.heatmap-cell:hover { transform:scale(1.15); z-index:1; }
 
-.page { display: none; padding: 2rem; max-width: 1400px; margin: 0 auto; }
-.page.active { display: block; }
+.loading { display:flex; align-items:center; justify-content:center; padding:3.5rem; color:var(–muted); font-size:0.78rem; gap:0.75rem; }
+.spinner { width:14px; height:14px; border:2px solid var(–border); border-top-color:var(–accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.empty { text-align:center; padding:2.5rem; color:var(–muted); font-size:0.78rem; }
 
-/* SECTION TITLE */
-.section-title {
-font-family: ‘Syne’, sans-serif;
-font-size: 0.7rem;
-font-weight: 600;
-letter-spacing: 0.15em;
-color: var(–muted);
-text-transform: uppercase;
-margin-bottom: 1rem;
-}
+.pagination { display:flex; justify-content:center; align-items:center; gap:0.4rem; padding:0.9rem; border-top:1px solid var(–border); }
+.page-btn { background:var(–surface2); border:1px solid var(–border); color:var(–text); padding:0.28rem 0.55rem; border-radius:5px; font-family:‘DM Mono’,monospace; font-size:0.68rem; cursor:pointer; transition:all 0.2s; }
+.page-btn:hover, .page-btn.active { border-color:var(–accent); color:var(–accent); }
+.page-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.page-info { font-size:0.68rem; color:var(–muted); }
 
-/* STATS GRID */
-.stats-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-gap: 1px;
-background: var(–border);
-border: 1px solid var(–border);
-border-radius: 12px;
-overflow: hidden;
-margin-bottom: 2rem;
-}
+.settings-card { background:var(–surface); border:1px solid var(–border); border-radius:12px; padding:1.75rem; max-width:480px; }
+.settings-row { display:flex; align-items:center; justify-content:space-between; padding:1rem 0; border-bottom:1px solid var(–border); }
+.settings-row:last-child { border-bottom:none; }
+.settings-label { font-size:0.78rem; }
+.settings-desc { font-size:0.62rem; color:var(–muted); margin-top:0.2rem; }
 
-.stat-card {
-background: var(–surface);
-padding: 1.5rem;
-transition: background 0.2s;
-}
-.stat-card:hover { background: var(–surface2); }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(–bg); }
+::-webkit-scrollbar-thumb { background:var(–border); border-radius:3px; }
 
-.stat-label {
-font-size: 0.65rem;
-color: var(–muted);
-letter-spacing: 0.1em;
-text-transform: uppercase;
-margin-bottom: 0.5rem;
-}
-
-.stat-value {
-font-family: ‘Syne’, sans-serif;
-font-size: 1.8rem;
-font-weight: 700;
-line-height: 1;
-margin-bottom: 0.25rem;
-}
-
-.stat-sub {
-font-size: 0.65rem;
-color: var(–muted);
-}
-
-.positive { color: var(–win); }
-.negative { color: var(–loss); }
-.neutral { color: var(–text); }
-.accent { color: var(–accent); }
-
-/* FILTERS */
-.filters {
-display: flex;
-flex-wrap: wrap;
-gap: 0.5rem;
-margin-bottom: 1.5rem;
-align-items: center;
-}
-
-.filter-label {
-font-size: 0.65rem;
-color: var(–muted);
-letter-spacing: 0.1em;
-}
-
-select, input[type=“date”], input[type=“number”], input[type=“text”] {
-background: var(–surface);
-border: 1px solid var(–border);
-color: var(–text);
-padding: 0.4rem 0.75rem;
-border-radius: 6px;
-font-family: ‘DM Mono’, monospace;
-font-size: 0.75rem;
-outline: none;
-cursor: pointer;
-transition: border-color 0.2s;
-}
-select:focus, input:focus { border-color: var(–accent); }
-
-.btn {
-background: var(–accent);
-color: #000;
-border: none;
-padding: 0.4rem 1rem;
-border-radius: 6px;
-font-family: ‘DM Mono’, monospace;
-font-size: 0.75rem;
-font-weight: 500;
-cursor: pointer;
-transition: opacity 0.2s;
-}
-.btn:hover { opacity: 0.85; }
-
-.btn-ghost {
-background: transparent;
-border: 1px solid var(–border);
-color: var(–muted);
-padding: 0.4rem 1rem;
-border-radius: 6px;
-font-family: ‘DM Mono’, monospace;
-font-size: 0.75rem;
-cursor: pointer;
-transition: all 0.2s;
-}
-.btn-ghost:hover { border-color: var(–accent); color: var(–accent); }
-
-/* CHARTS GRID */
-.charts-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 1.5rem;
-margin-bottom: 2rem;
-}
-
-@media (max-width: 768px) {
-.charts-grid { grid-template-columns: 1fr; }
-.stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-.chart-card {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 12px;
-padding: 1.5rem;
-}
-
-.chart-card.full-width {
-grid-column: 1 / -1;
-}
-
-.chart-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 1.25rem;
-}
-
-.chart-title {
-font-family: ‘Syne’, sans-serif;
-font-size: 0.85rem;
-font-weight: 600;
-color: var(–text);
-}
-
-.tab-switch {
-display: flex;
-gap: 0;
-background: var(–surface2);
-border: 1px solid var(–border);
-border-radius: 6px;
-overflow: hidden;
-}
-
-.tab-btn {
-padding: 0.25rem 0.6rem;
-font-size: 0.65rem;
-font-family: ‘DM Mono’, monospace;
-color: var(–muted);
-background: transparent;
-border: none;
-cursor: pointer;
-transition: all 0.2s;
-}
-.tab-btn.active { background: var(–accent); color: #000; }
-
-.chart-wrap { position: relative; height: 220px; }
-
-/* TRADE TABLE */
-.table-wrap {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 12px;
-overflow: hidden;
-}
-
-table {
-width: 100%;
-border-collapse: collapse;
-font-size: 0.75rem;
-}
-
-thead {
-background: var(–surface2);
-border-bottom: 1px solid var(–border);
-}
-
-th {
-padding: 0.75rem 1rem;
-text-align: left;
-font-size: 0.65rem;
-letter-spacing: 0.08em;
-color: var(–muted);
-font-weight: 400;
-white-space: nowrap;
-cursor: pointer;
-user-select: none;
-}
-th:hover { color: var(–accent); }
-
-td {
-padding: 0.75rem 1rem;
-border-bottom: 1px solid rgba(42,42,58,0.5);
-vertical-align: middle;
-white-space: nowrap;
-}
-
-tr:last-child td { border-bottom: none; }
-
-tbody tr {
-cursor: pointer;
-transition: background 0.15s;
-}
-tbody tr:hover { background: var(–surface2); }
-
-.badge {
-display: inline-block;
-padding: 0.15rem 0.5rem;
-border-radius: 4px;
-font-size: 0.65rem;
-font-weight: 500;
-letter-spacing: 0.05em;
-}
-
-.badge-buy { background: rgba(77,240,176,0.15); color: var(–win); }
-.badge-sell { background: rgba(255,77,109,0.15); color: var(–loss); }
-.badge-type { background: var(–surface2); color: var(–muted); border: 1px solid var(–border); }
-
-/* EXPAND ROW */
-.expand-row { display: none; }
-.expand-row.open { display: table-row; }
-
-.expand-content {
-padding: 1.5rem;
-background: var(–surface2);
-border-bottom: 1px solid var(–border);
-}
-
-.expand-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 1.5rem;
-}
-
-.expand-section-title {
-font-size: 0.65rem;
-color: var(–muted);
-letter-spacing: 0.1em;
-text-transform: uppercase;
-margin-bottom: 0.75rem;
-}
-
-.expand-text {
-font-size: 0.8rem;
-line-height: 1.7;
-color: var(–text);
-white-space: pre-wrap;
-}
-
-.expand-imgs {
-display: flex;
-flex-wrap: wrap;
-gap: 0.5rem;
-margin-top: 0.5rem;
-}
-
-.expand-img {
-width: 120px;
-height: 80px;
-object-fit: cover;
-border-radius: 6px;
-border: 1px solid var(–border);
-cursor: pointer;
-transition: transform 0.2s;
-}
-.expand-img:hover { transform: scale(1.05); }
-
-/* LIGHTBOX */
-.lightbox {
-display: none;
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.9);
-z-index: 1000;
-justify-content: center;
-align-items: center;
-}
-.lightbox.open { display: flex; }
-.lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
-.lightbox-close {
-position: absolute;
-top: 1rem; right: 1.5rem;
-font-size: 2rem;
-color: white;
-cursor: pointer;
-background: none;
-border: none;
-}
-
-/* SETTINGS PAGE */
-.settings-card {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 12px;
-padding: 2rem;
-max-width: 500px;
-}
-
-.settings-row {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 1rem 0;
-border-bottom: 1px solid var(–border);
-}
-.settings-row:last-child { border-bottom: none; }
-
-.settings-label {
-font-size: 0.8rem;
-color: var(–text);
-}
-.settings-desc {
-font-size: 0.65rem;
-color: var(–muted);
-margin-top: 0.25rem;
-}
-
-/* LOADING */
-.loading {
-display: flex;
-align-items: center;
-justify-content: center;
-padding: 4rem;
-color: var(–muted);
-font-size: 0.8rem;
-gap: 0.75rem;
-}
-
-.spinner {
-width: 16px; height: 16px;
-border: 2px solid var(–border);
-border-top-color: var(–accent);
-border-radius: 50%;
-animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.empty {
-text-align: center;
-padding: 3rem;
-color: var(–muted);
-font-size: 0.8rem;
-}
-
-/* HEATMAP */
-.heatmap-grid {
-display: grid;
-grid-template-columns: 50px repeat(24, 1fr);
-gap: 2px;
-font-size: 0.55rem;
-}
-
-.heatmap-cell {
-height: 28px;
-border-radius: 3px;
-background: var(–surface2);
-display: flex;
-align-items: center;
-justify-content: center;
-color: var(–muted);
-transition: transform 0.1s;
-cursor: default;
-position: relative;
-}
-.heatmap-cell:hover { transform: scale(1.2); z-index: 1; }
-
-.heatmap-header {
-height: 20px;
-display: flex;
-align-items: center;
-justify-content: center;
-color: var(–muted);
-font-size: 0.55rem;
-}
-
-/* FILTERED STATS */
-.filtered-stats {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 1px;
-background: var(–border);
-border: 1px solid var(–border);
-border-radius: 12px;
-overflow: hidden;
-margin-bottom: 1.5rem;
-}
-
-.f-stat {
-background: var(–surface2);
-padding: 1.25rem 1.5rem;
-}
-
-/* PAGINATION */
-.pagination {
-display: flex;
-justify-content: center;
-align-items: center;
-gap: 0.5rem;
-padding: 1rem;
-border-top: 1px solid var(–border);
-}
-
-.page-btn {
-background: var(–surface2);
-border: 1px solid var(–border);
-color: var(–text);
-padding: 0.3rem 0.6rem;
-border-radius: 5px;
-font-family: ‘DM Mono’, monospace;
-font-size: 0.7rem;
-cursor: pointer;
-transition: all 0.2s;
-}
-.page-btn:hover, .page-btn.active { border-color: var(–accent); color: var(–accent); }
-.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.page-info { font-size: 0.7rem; color: var(–muted); }
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(–bg); }
-::-webkit-scrollbar-thumb { background: var(–border); border-radius: 3px; }
-
-/* MOBILE */
-@media (max-width: 600px) {
-nav { padding: 0 1rem; }
-.page { padding: 1rem; }
-.nav-logo { font-size: 0.9rem; }
-.update-time { display: none; }
-.expand-grid { grid-template-columns: 1fr; }
-.filtered-stats { grid-template-columns: 1fr; }
+@media(max-width:768px) {
+.charts-grid { grid-template-columns:1fr; }
+.stats-grid { grid-template-columns:repeat(2,1fr); }
+.filtered-stats { grid-template-columns:1fr; }
+.expand-grid { grid-template-columns:1fr; }
+.update-time { display:none; }
+.page { padding:1rem; }
+nav { padding:0 1rem; }
 }
 </style>
 
 </head>
 <body>
 
-<!-- NAV -->
-
 <nav>
   <div class="nav-logo">TJ//</div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('overview')">總覽</button>
-    <button class="nav-tab" onclick="showPage('trades')">交易紀錄</button>
-    <button class="nav-tab" onclick="showPage('settings')">設定</button>
+    <button class="nav-tab active" onclick="showPage('overview',this)">總覽</button>
+    <button class="nav-tab" onclick="showPage('trades',this)">交易紀錄</button>
+    <button class="nav-tab" onclick="showPage('settings',this)">設定</button>
   </div>
   <div class="nav-right">
     <span class="update-time" id="updateTime">—</span>
@@ -586,89 +171,46 @@ nav { padding: 0 1rem; }
 
 <main>
 
-<!-- 總覽 PAGE -->
+<!-- 總覽 -->
 
 <div class="page active" id="page-overview">
-
   <div id="overviewLoading" class="loading"><div class="spinner"></div>讀取資料中...</div>
   <div id="overviewContent" style="display:none">
 
 ```
-<!-- STATS -->
 <p class="section-title">整體績效</p>
 <div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-label">總盈虧</div>
-    <div class="stat-value" id="totalProfit">—</div>
-    <div class="stat-sub" id="totalPips">— pips</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">勝率</div>
-    <div class="stat-value accent" id="winRate">—</div>
-    <div class="stat-sub" id="winLossCount">— 勝 / — 敗</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">盈虧比</div>
-    <div class="stat-value accent" id="rrRatio">—</div>
-    <div class="stat-sub">平均獲利 / 平均虧損</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">最大連續虧損</div>
-    <div class="stat-value negative" id="maxConsecLoss">—</div>
-    <div class="stat-sub" id="maxConsecLossAmt">— USD</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">最大單筆虧損</div>
-    <div class="stat-value negative" id="maxSingleLoss">—</div>
-    <div class="stat-sub">單筆最大虧損</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">平均持倉時間</div>
-    <div class="stat-value neutral" id="avgHoldTime">—</div>
-    <div class="stat-sub">分鐘</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">總交易筆數</div>
-    <div class="stat-value neutral" id="totalTrades">—</div>
-    <div class="stat-sub">筆歷史交易</div>
-  </div>
+  <div class="stat-card"><div class="stat-label">總盈虧</div><div class="stat-value" id="totalProfit">—</div><div class="stat-sub" id="totalPips">— pips</div></div>
+  <div class="stat-card"><div class="stat-label">勝率</div><div class="stat-value accent" id="winRate">—</div><div class="stat-sub" id="winLossCount">— 勝 / — 敗</div></div>
+  <div class="stat-card"><div class="stat-label">盈虧比</div><div class="stat-value accent" id="rrRatio">—</div><div class="stat-sub">平均獲利 / 平均虧損</div></div>
+  <div class="stat-card"><div class="stat-label">最大連續虧損</div><div class="stat-value negative" id="maxConsecLoss">—</div><div class="stat-sub" id="maxConsecAmt">— USD</div></div>
+  <div class="stat-card"><div class="stat-label">最大單筆虧損</div><div class="stat-value negative" id="maxSingleLoss">—</div><div class="stat-sub">單筆最大</div></div>
+  <div class="stat-card"><div class="stat-label">平均持倉時間</div><div class="stat-value neutral" id="avgHoldTime">—</div><div class="stat-sub">分鐘</div></div>
+  <div class="stat-card"><div class="stat-label">總交易筆數</div><div class="stat-value neutral" id="totalTrades">—</div><div class="stat-sub">筆歷史交易</div></div>
 </div>
 
-<!-- CHARTS -->
 <p class="section-title">圖表分析</p>
 <div class="charts-grid">
-
-  <!-- 資金曲線 -->
   <div class="chart-card full-width">
     <div class="chart-header">
       <span class="chart-title">資金曲線</span>
       <div class="tab-switch">
-        <button class="tab-btn active" onclick="switchEquityTab('usd', this)">USD</button>
-        <button class="tab-btn" onclick="switchEquityTab('pips', this)">Pips</button>
+        <button class="tab-btn active" onclick="switchEquity('usd',this)">USD</button>
+        <button class="tab-btn" onclick="switchEquity('pips',this)">Pips</button>
       </div>
     </div>
     <div class="chart-wrap"><canvas id="equityChart"></canvas></div>
   </div>
-
-  <!-- 型態績效 -->
   <div class="chart-card">
-    <div class="chart-header">
-      <span class="chart-title">型態績效</span>
-    </div>
+    <div class="chart-header"><span class="chart-title">型態績效</span></div>
     <div class="chart-wrap"><canvas id="patternChart"></canvas></div>
   </div>
-
-  <!-- 勝率熱力圖 -->
   <div class="chart-card">
-    <div class="chart-header">
-      <span class="chart-title">時段熱力圖（台灣時間）</span>
-    </div>
-    <div id="heatmapWrap" style="overflow-x:auto"></div>
+    <div class="chart-header"><span class="chart-title">時段熱力圖（台灣時間）</span></div>
+    <div class="heatmap-scroll"><div id="heatmapWrap"></div></div>
   </div>
-
 </div>
 
-<!-- FILTERED STATS -->
 <p class="section-title">篩選統計</p>
 <div class="filters">
   <span class="filter-label">幣對</span>
@@ -680,75 +222,55 @@ nav { padding: 0 1rem; }
   <button class="btn-ghost" onclick="resetFilters()">重設</button>
 </div>
 <div class="filtered-stats">
-  <div class="f-stat">
-    <div class="stat-label">篩選總盈虧</div>
-    <div class="stat-value" id="fTotalProfit">—</div>
-  </div>
-  <div class="f-stat">
-    <div class="stat-label">篩選勝率</div>
-    <div class="stat-value accent" id="fWinRate">—</div>
-  </div>
-  <div class="f-stat">
-    <div class="stat-label">篩選盈虧比</div>
-    <div class="stat-value accent" id="fRR">—</div>
-  </div>
+  <div class="f-stat"><div class="stat-label">篩選總盈虧</div><div class="stat-value" id="fTotalProfit">—</div></div>
+  <div class="f-stat"><div class="stat-label">篩選勝率</div><div class="stat-value accent" id="fWinRate">—</div></div>
+  <div class="f-stat"><div class="stat-label">篩選盈虧比</div><div class="stat-value accent" id="fRR">—</div></div>
 </div>
 ```
 
   </div>
 </div>
 
-<!-- 交易紀錄 PAGE -->
+<!-- 交易紀錄 -->
 
 <div class="page" id="page-trades">
-
   <div id="tradesLoading" class="loading"><div class="spinner"></div>讀取資料中...</div>
   <div id="tradesContent" style="display:none">
-
-```
-<div class="filters">
-  <span class="filter-label">幣對</span>
-  <select id="tSymbol" onchange="renderTable()"><option value="">全部</option></select>
-  <span class="filter-label">方向</span>
-  <select id="tType" onchange="renderTable()">
-    <option value="">全部</option>
-    <option value="Buy">Buy</option>
-    <option value="Sell">Sell</option>
-  </select>
-  <span class="filter-label">型態</span>
-  <select id="tPattern" onchange="renderTable()"><option value="">全部</option></select>
-  <span class="filter-label">從</span>
-  <input type="date" id="tDateFrom" onchange="renderTable()">
-  <span class="filter-label">至</span>
-  <input type="date" id="tDateTo" onchange="renderTable()">
-  <button class="btn-ghost" onclick="resetTableFilters()">重設</button>
-</div>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th onclick="sortBy('ticket')">#票號</th>
-        <th onclick="sortBy('symbol')">幣對</th>
-        <th onclick="sortBy('type')">方向</th>
-        <th onclick="sortBy('lots')">手數</th>
-        <th onclick="sortBy('openTime')">開倉時間 (台灣)</th>
-        <th onclick="sortBy('closeTime')">平倉時間 (台灣)</th>
-        <th onclick="sortBy('profit')">盈虧 (USD)</th>
-        <th onclick="sortBy('pips')">Pips</th>
-        <th>型態</th>
-      </tr>
-    </thead>
-    <tbody id="tradeTableBody"></tbody>
-  </table>
-  <div class="pagination" id="pagination"></div>
-</div>
-```
-
+    <div class="filters">
+      <span class="filter-label">幣對</span>
+      <select id="tSymbol" onchange="renderTable()"><option value="">全部</option></select>
+      <span class="filter-label">方向</span>
+      <select id="tType" onchange="renderTable()"><option value="">全部</option><option>Buy</option><option>Sell</option></select>
+      <span class="filter-label">型態</span>
+      <select id="tPattern" onchange="renderTable()"><option value="">全部</option></select>
+      <span class="filter-label">從</span><input type="date" id="tDateFrom" onchange="renderTable()">
+      <span class="filter-label">至</span><input type="date" id="tDateTo" onchange="renderTable()">
+      <button class="btn-ghost" onclick="resetTableFilters()">重設</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('ticket')">#票號</th>
+            <th onclick="sortBy('symbol')">幣對</th>
+            <th onclick="sortBy('type')">方向</th>
+            <th onclick="sortBy('lots')">手數</th>
+            <th onclick="sortBy('openTime')">開倉 (台灣)</th>
+            <th onclick="sortBy('closeTime')">平倉 (台灣)</th>
+            <th onclick="sortBy('profit')">盈虧 USD</th>
+            <th onclick="sortBy('pips')">Pips</th>
+            <th>型態</th>
+            <th>週期</th>
+          </tr>
+        </thead>
+        <tbody id="tradeTableBody"></tbody>
+      </table>
+      <div class="pagination" id="pagination"></div>
+    </div>
   </div>
 </div>
 
-<!-- 設定 PAGE -->
+<!-- 設定 -->
 
 <div class="page" id="page-settings">
   <p class="section-title">系統設定</p>
@@ -756,24 +278,22 @@ nav { padding: 0 1rem; }
     <div class="settings-row">
       <div>
         <div class="settings-label">伺服器時區</div>
-        <div class="settings-desc">MT4 伺服器時間偏移（夏令/冬令時請調整）</div>
+        <div class="settings-desc">夏令時間請調整（例：UTC+3 改 UTC+2）</div>
       </div>
       <div style="display:flex;align-items:center;gap:0.5rem">
-        <span style="font-size:0.8rem;color:var(--muted)">UTC +</span>
-        <input type="number" id="serverOffset" min="-12" max="14" value="3" style="width:60px;text-align:center">
+        <span style="font-size:0.78rem;color:var(--muted)">UTC +</span>
+        <input type="number" id="serverOffset" min="-12" max="14" value="3" style="width:58px;text-align:center">
       </div>
     </div>
     <div class="settings-row">
-      <div>
-        <div class="settings-label">每頁顯示筆數</div>
-      </div>
+      <div><div class="settings-label">每頁顯示筆數</div></div>
       <select id="perPageSetting">
         <option value="20">20</option>
         <option value="50" selected>50</option>
         <option value="100">100</option>
       </select>
     </div>
-    <div class="settings-row" style="border:none;padding-top:1.5rem">
+    <div class="settings-row" style="border:none;padding-top:1.25rem">
       <div></div>
       <button class="btn" onclick="saveSettings()">儲存設定</button>
     </div>
@@ -782,155 +302,125 @@ nav { padding: 0 1rem; }
 
 </main>
 
-<!-- LIGHTBOX -->
-
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-close">✕</button>
   <img id="lightboxImg" src="" alt="">
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
-const WORKER_URL = 'https://notion-proxy.clade-clade-mi.workers.dev';
-const DB_ID = '3625992245dd80b69fb7f1894010dc60';
+// ── CONFIG ──────────────────────────────────────────
+const WORKER = 'https://notion-proxy.clade-clade-mi.workers.dev';
+const DB_ID  = '3625992245dd80b69fb7f1894010dc60';
 
-// ─── STATE ────────────────────────────────────────────────
-let allTrades = [];
-let filteredTrades = [];
-let currentPage = 1;
-let perPage = 50;
-let sortKey = 'closeTime';
-let sortDir = -1;
-let serverOffset = 3;
-let equityMode = 'usd';
-let equityChart = null;
-let patternChart = null;
+// ── STATE ───────────────────────────────────────────
+let allTrades = [], filteredTrades = [];
+let currentPage = 1, perPage = 50;
+let sortKey = 'closeTime', sortDir = -1;
+let serverOffset = 3, equityMode = 'usd';
+let equityChart = null, patternChart = null;
+let openRowId = null;
 
-// ─── SETTINGS ─────────────────────────────────────────────
+// ── SETTINGS ────────────────────────────────────────
 function loadSettings() {
   serverOffset = parseInt(localStorage.getItem('serverOffset') || '3');
   perPage = parseInt(localStorage.getItem('perPage') || '50');
   document.getElementById('serverOffset').value = serverOffset;
   document.getElementById('perPageSetting').value = perPage;
 }
-
 function saveSettings() {
   serverOffset = parseInt(document.getElementById('serverOffset').value);
   perPage = parseInt(document.getElementById('perPageSetting').value);
   localStorage.setItem('serverOffset', serverOffset);
   localStorage.setItem('perPage', perPage);
-  renderTable();
-  renderCharts();
+  renderTable(); renderCharts();
   alert('設定已儲存 ✅');
 }
 
-// ─── TIME UTILS ───────────────────────────────────────────
-function toTaiwanTime(isoStr) {
-  if (!isoStr) return null;
-  const date = new Date(isoStr);
-  // Convert: remove server offset, add UTC+8
-  const utcMs = date.getTime() - (serverOffset * 3600000);
-  const twMs = utcMs + (8 * 3600000);
-  return new Date(twMs);
+// ── TIME ────────────────────────────────────────────
+function toTW(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return new Date(d.getTime() - serverOffset * 3600000 + 8 * 3600000);
 }
-
-function formatDT(isoStr) {
-  const d = toTaiwanTime(isoStr);
+function fmtDT(iso) {
+  const d = toTW(iso);
   if (!d) return '—';
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function holdMin(o, c) {
+  if (!o || !c) return 0;
+  return Math.round((new Date(c) - new Date(o)) / 60000);
+}
+function fmtMin(m) {
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m/60), r = m%60;
+  return r ? `${h}h ${r}m` : `${h}h`;
 }
 
-function holdingMinutes(openISO, closeISO) {
-  if (!openISO || !closeISO) return 0;
-  return Math.round((new Date(closeISO) - new Date(openISO)) / 60000);
-}
-
-function formatMinutes(mins) {
-  if (mins < 60) return `${mins}m`;
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-
-// ─── NOTION API ───────────────────────────────────────────
-async function fetchAllTrades() {
-  let results = [];
-  let cursor = undefined;
-  let hasMore = true;
-
+// ── API ─────────────────────────────────────────────
+async function fetchAll() {
+  let results = [], cursor, hasMore = true;
   while (hasMore) {
     const body = { page_size: 100 };
     if (cursor) body.start_cursor = cursor;
-
-    const res = await fetch(`${WORKER_URL}/v1/databases/${DB_ID}/query`, {
+    const r = await fetch(`${WORKER}/v1/databases/${DB_ID}/query`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-
-    const data = await res.json();
-    results = results.concat(data.results || []);
-    hasMore = data.has_more || false;
-    cursor = data.next_cursor;
+    const d = await r.json();
+    results = results.concat(d.results || []);
+    hasMore = d.has_more || false;
+    cursor = d.next_cursor;
   }
-
   return results;
 }
 
-async function fetchPageContent(pageId) {
-  const res = await fetch(`${WORKER_URL}/v1/blocks/${pageId}/children`, {
-    headers: { 'Content-Type': 'application/json' }
-  });
-  return await res.json();
+async function fetchBlocks(id) {
+  const r = await fetch(`${WORKER}/v1/blocks/${id}/children`);
+  return await r.json();
 }
 
-// ─── PARSE NOTION DATA ────────────────────────────────────
-function parseTrade(page) {
+// ── PARSE ────────────────────────────────────────────
+// Notion 實際欄位名稱對應
+function parse(page) {
   const p = page.properties;
-  const get = (key, type) => {
-    if (!p[key]) return null;
-    if (type === 'title') return p[key].title?.[0]?.plain_text || '';
-    if (type === 'select') return p[key].select?.name || '';
-    if (type === 'number') return p[key].number ?? null;
-    if (type === 'date') return p[key].date?.start || null;
-    if (type === 'text') return p[key].rich_text?.[0]?.plain_text || '';
-    return null;
-  };
+  const title  = k => p[k]?.title?.[0]?.plain_text || '';
+  const sel    = k => p[k]?.select?.name || '';
+  const num    = k => p[k]?.number ?? null;
+  const date   = k => p[k]?.date?.start || null;
+  const text   = k => p[k]?.rich_text?.[0]?.plain_text || '';
 
   return {
-    id: page.id,
-    ticket: get('Ticket', 'title'),
-    symbol: get('Symbol', 'select'),
-    type: get('Type', 'select'),
-    lots: get('Lots', 'number'),
-    openPrice: get('Open Price', 'number'),
-    closePrice: get('Close Price', 'number'),
-    profit: get('Profit', 'number'),
-    pips: get('Pips', 'number'),
-    sl: get('Stop Loss', 'number'),
-    tp: get('Take Profit', 'number'),
-    openTime: get('Open Time', 'date'),
-    closeTime: get('Close Time', 'date'),
-    comment: get('Comment', 'text'),
-    pattern: get('型態', 'select'),
-    timeframe: get('時區', 'select'),
-    説明: get('說明', 'text'),
+    id:        page.id,
+    ticket:    title('Ticket'),
+    symbol:    sel('Symbol'),
+    type:      sel('Type (Buy/Sell)'),      // ← 修正
+    lots:      num('Lots'),
+    openPrice: num('Open price'),           // ← 修正（小寫p）
+    closePrice:num('Close Price'),
+    profit:    num('Profit'),
+    pips:      num('Pips'),
+    sl:        num('Stop Loss'),
+    tp:        num('Take Profit'),
+    openTime:  date('Open Time'),
+    closeTime: date('Close Time'),
+    comment:   text('Comment'),
+    pattern:   sel('Pattern'),              // ← 修正（英文）
+    timeframe: sel('時區'),                 // ← 週期
+    note:      text('說明'),                // ← 說明
   };
 }
 
-// ─── LOAD DATA ────────────────────────────────────────────
+// ── LOAD ─────────────────────────────────────────────
 async function loadData() {
-  document.getElementById('overviewLoading').style.display = 'flex';
-  document.getElementById('overviewContent').style.display = 'none';
-  document.getElementById('tradesLoading').style.display = 'flex';
-  document.getElementById('tradesContent').style.display = 'none';
+  ['overviewLoading','tradesLoading'].forEach(id => document.getElementById(id).style.display = 'flex');
+  ['overviewContent','tradesContent'].forEach(id => document.getElementById(id).style.display = 'none');
 
   try {
-    const pages = await fetchAllTrades();
-    allTrades = pages.map(parseTrade).sort((a, b) => {
-      return new Date(a.closeTime) - new Date(b.closeTime);
-    });
+    const pages = await fetchAll();
+    allTrades = pages.map(parse).sort((a,b) => new Date(a.closeTime) - new Date(b.closeTime));
 
     const now = new Date();
     document.getElementById('updateTime').textContent =
@@ -941,487 +431,335 @@ async function loadData() {
     renderCharts();
     renderTable();
 
-    document.getElementById('overviewLoading').style.display = 'none';
-    document.getElementById('overviewContent').style.display = 'block';
-    document.getElementById('tradesLoading').style.display = 'none';
-    document.getElementById('tradesContent').style.display = 'block';
+    ['overviewLoading','tradesLoading'].forEach(id => document.getElementById(id).style.display = 'none');
+    ['overviewContent','tradesContent'].forEach(id => document.getElementById(id).style.display = 'block');
   } catch(e) {
     console.error(e);
-    document.getElementById('overviewLoading').innerHTML = '<div style="color:var(--loss)">讀取失敗，請確認設定</div>';
+    document.getElementById('overviewLoading').innerHTML = '<div style="color:var(--loss);padding:2rem">讀取失敗，請確認設定或重新整理</div>';
   }
 }
 
-// ─── POPULATE FILTERS ─────────────────────────────────────
+// ── FILTERS ──────────────────────────────────────────
 function populateFilters() {
-  const symbols = [...new Set(allTrades.map(t => t.symbol).filter(Boolean))].sort();
-  const patterns = [...new Set(allTrades.map(t => t.pattern).filter(Boolean))].sort();
-  const timeframes = [...new Set(allTrades.map(t => t.timeframe).filter(Boolean))].sort();
+  const uniq = key => [...new Set(allTrades.map(t => t[key]).filter(Boolean))].sort();
+  const syms = uniq('symbol'), pats = uniq('pattern'), tfs = uniq('timeframe');
 
-  ['fSymbol', 'tSymbol'].forEach(id => {
+  ['fSymbol','tSymbol'].forEach(id => {
     const el = document.getElementById(id);
-    el.innerHTML = '<option value="">全部</option>';
-    symbols.forEach(s => el.innerHTML += `<option value="${s}">${s}</option>`);
+    el.innerHTML = '<option value="">全部</option>' + syms.map(s => `<option>${s}</option>`).join('');
   });
-
-  ['fPattern', 'tPattern'].forEach(id => {
+  ['fPattern','tPattern'].forEach(id => {
     const el = document.getElementById(id);
-    el.innerHTML = '<option value="">全部</option>';
-    patterns.forEach(p => el.innerHTML += `<option value="${p}">${p}</option>`);
+    el.innerHTML = '<option value="">全部</option>' + pats.map(p => `<option>${p}</option>`).join('');
   });
-
-  const tf = document.getElementById('fTimeframe');
-  tf.innerHTML = '<option value="">全部</option>';
-  timeframes.forEach(t => tf.innerHTML += `<option value="${t}">${t}</option>`);
+  document.getElementById('fTimeframe').innerHTML =
+    '<option value="">全部</option>' + tfs.map(t => `<option>${t}</option>`).join('');
 }
 
-// ─── STATS CALC ───────────────────────────────────────────
+// ── STATS ────────────────────────────────────────────
 function calcStats(trades) {
-  if (!trades.length) return { totalProfit: 0, totalPips: 0, winRate: 0, wins: 0, losses: 0, rr: 0, maxConsec: 0, maxConsecAmt: 0, maxSingleLoss: 0, avgHold: 0 };
-
-  const profits = trades.map(t => t.profit || 0);
-  const pips = trades.map(t => t.pips || 0);
-  const wins = trades.filter(t => (t.profit || 0) > 0);
-  const losses = trades.filter(t => (t.profit || 0) <= 0);
-
-  const avgWin = wins.length ? wins.reduce((s,t) => s + t.profit, 0) / wins.length : 0;
-  const avgLoss = losses.length ? Math.abs(losses.reduce((s,t) => s + t.profit, 0) / losses.length) : 0;
-
-  let maxConsec = 0, cur = 0, maxConsecAmt = 0, curAmt = 0;
+  if (!trades.length) return { totalProfit:0,totalPips:0,winRate:0,wins:0,losses:0,rr:0,maxConsec:0,maxConsecAmt:0,maxSingleLoss:0,avgHold:0 };
+  const profits = trades.map(t => t.profit||0);
+  const wins = trades.filter(t => (t.profit||0) > 0);
+  const losses = trades.filter(t => (t.profit||0) <= 0);
+  const avgWin = wins.length ? wins.reduce((s,t)=>s+t.profit,0)/wins.length : 0;
+  const avgLoss = losses.length ? Math.abs(losses.reduce((s,t)=>s+t.profit,0)/losses.length) : 0;
+  let maxC=0, curC=0, maxCAmt=0, curCAmt=0;
   trades.forEach(t => {
-    if ((t.profit || 0) <= 0) { cur++; curAmt += (t.profit || 0); }
-    else { cur = 0; curAmt = 0; }
-    if (cur > maxConsec) { maxConsec = cur; maxConsecAmt = curAmt; }
+    if ((t.profit||0)<=0) { curC++; curCAmt+=(t.profit||0); }
+    else { curC=0; curCAmt=0; }
+    if (curC>maxC) { maxC=curC; maxCAmt=curCAmt; }
   });
-
-  const holdTimes = trades.filter(t => t.openTime && t.closeTime).map(t => holdingMinutes(t.openTime, t.closeTime));
-  const avgHold = holdTimes.length ? Math.round(holdTimes.reduce((a,b) => a+b, 0) / holdTimes.length) : 0;
-  const maxSingleLoss = Math.min(...profits);
-
+  const holds = trades.filter(t=>t.openTime&&t.closeTime).map(t=>holdMin(t.openTime,t.closeTime));
+  const avgHold = holds.length ? Math.round(holds.reduce((a,b)=>a+b,0)/holds.length) : 0;
   return {
-    totalProfit: profits.reduce((a,b) => a+b, 0),
-    totalPips: pips.reduce((a,b) => a+b, 0),
-    winRate: trades.length ? (wins.length / trades.length * 100) : 0,
-    wins: wins.length,
-    losses: losses.length,
-    rr: avgLoss > 0 ? (avgWin / avgLoss) : 0,
-    maxConsec,
-    maxConsecAmt,
-    maxSingleLoss,
+    totalProfit: profits.reduce((a,b)=>a+b,0),
+    totalPips: trades.map(t=>t.pips||0).reduce((a,b)=>a+b,0),
+    winRate: wins.length/trades.length*100,
+    wins: wins.length, losses: losses.length,
+    rr: avgLoss>0 ? avgWin/avgLoss : 0,
+    maxConsec: maxC, maxConsecAmt: maxCAmt,
+    maxSingleLoss: Math.min(...profits),
     avgHold
   };
 }
 
-// ─── OVERVIEW RENDER ──────────────────────────────────────
+// ── OVERVIEW ─────────────────────────────────────────
 function renderOverview() {
   const s = calcStats(allTrades);
-  const fmt = (n, dec=2) => (n >= 0 ? '+' : '') + n.toFixed(dec);
+  const fmt = (n,d=2) => (n>=0?'+':'')+n.toFixed(d);
 
-  const el = (id, val, cls) => {
-    const e = document.getElementById(id);
-    e.textContent = val;
-    if (cls) e.className = `stat-value ${cls}`;
-  };
-
-  el('totalProfit', `$${fmt(s.totalProfit)}`, s.totalProfit >= 0 ? 'positive' : 'negative');
-  document.getElementById('totalPips').textContent = `${fmt(s.totalPips, 1)} pips`;
-  el('winRate', `${s.winRate.toFixed(1)}%`, 'accent');
+  const set = (id,val,cls) => { const e=document.getElementById(id); e.textContent=val; if(cls) e.className=`stat-value ${cls}`; };
+  set('totalProfit', `$${fmt(s.totalProfit)}`, s.totalProfit>=0?'positive':'negative');
+  document.getElementById('totalPips').textContent = `${fmt(s.totalPips,1)} pips`;
+  set('winRate', `${s.winRate.toFixed(1)}%`, 'accent');
   document.getElementById('winLossCount').textContent = `${s.wins} 勝 / ${s.losses} 敗`;
-  el('rrRatio', s.rr.toFixed(2), 'accent');
-  el('maxConsecLoss', `${s.maxConsec} 連敗`, 'negative');
-  document.getElementById('maxConsecLossAmt').textContent = `${s.maxConsecAmt.toFixed(2)} USD`;
-  el('maxSingleLoss', `$${s.maxSingleLoss.toFixed(2)}`, 'negative');
-  el('avgHoldTime', formatMinutes(s.avgHold), 'neutral');
-  el('totalTrades', allTrades.length, 'neutral');
+  set('rrRatio', s.rr.toFixed(2), 'accent');
+  set('maxConsecLoss', `${s.maxConsec} 連敗`, 'negative');
+  document.getElementById('maxConsecAmt').textContent = `${s.maxConsecAmt.toFixed(2)} USD`;
+  set('maxSingleLoss', `$${s.maxSingleLoss.toFixed(2)}`, 'negative');
+  set('avgHoldTime', fmtMin(s.avgHold), 'neutral');
+  set('totalTrades', allTrades.length, 'neutral');
 
   updateFilteredStats();
   renderHeatmap();
 }
 
-// ─── FILTERED STATS ───────────────────────────────────────
 function updateFilteredStats() {
   const sym = document.getElementById('fSymbol').value;
-  const tf = document.getElementById('fTimeframe').value;
+  const tf  = document.getElementById('fTimeframe').value;
   const pat = document.getElementById('fPattern').value;
-
-  let filtered = allTrades;
-  if (sym) filtered = filtered.filter(t => t.symbol === sym);
-  if (tf) filtered = filtered.filter(t => t.timeframe === tf);
-  if (pat) filtered = filtered.filter(t => t.pattern === pat);
-
-  const s = calcStats(filtered);
-  const fmt = (n, dec=2) => (n >= 0 ? '+' : '') + n.toFixed(dec);
-
+  let f = allTrades;
+  if (sym) f = f.filter(t=>t.symbol===sym);
+  if (tf)  f = f.filter(t=>t.timeframe===tf);
+  if (pat) f = f.filter(t=>t.pattern===pat);
+  const s = calcStats(f);
   const fp = document.getElementById('fTotalProfit');
-  fp.textContent = `$${fmt(s.totalProfit)}`;
-  fp.className = `stat-value ${s.totalProfit >= 0 ? 'positive' : 'negative'}`;
+  fp.textContent = `$${(s.totalProfit>=0?'+':'')+s.totalProfit.toFixed(2)}`;
+  fp.className = `stat-value ${s.totalProfit>=0?'positive':'negative'}`;
   document.getElementById('fWinRate').textContent = `${s.winRate.toFixed(1)}%`;
   document.getElementById('fRR').textContent = s.rr.toFixed(2);
 }
 
 function resetFilters() {
-  ['fSymbol','fTimeframe','fPattern'].forEach(id => document.getElementById(id).value = '');
+  ['fSymbol','fTimeframe','fPattern'].forEach(id=>document.getElementById(id).value='');
   updateFilteredStats();
 }
 
-// ─── CHARTS ───────────────────────────────────────────────
-function renderCharts() {
-  renderEquityChart();
-  renderPatternChart();
-}
+// ── CHARTS ───────────────────────────────────────────
+function renderCharts() { renderEquity(); renderPattern(); }
 
-function renderEquityChart() {
-  const sorted = [...allTrades].sort((a,b) => new Date(a.closeTime) - new Date(b.closeTime));
-  let cum = 0;
-  const labels = [];
-  const data = [];
-
+function renderEquity() {
+  const sorted = [...allTrades].sort((a,b)=>new Date(a.closeTime)-new Date(b.closeTime));
+  let cum=0; const labels=[],data=[];
   sorted.forEach(t => {
-    const val = equityMode === 'usd' ? (t.profit || 0) : (t.pips || 0);
-    cum += val;
-    labels.push(formatDT(t.closeTime).slice(0,10));
+    cum += equityMode==='usd' ? (t.profit||0) : (t.pips||0);
+    labels.push(fmtDT(t.closeTime).slice(0,10));
     data.push(parseFloat(cum.toFixed(2)));
   });
-
   const ctx = document.getElementById('equityChart').getContext('2d');
   if (equityChart) equityChart.destroy();
-
-  const isPositive = data[data.length-1] >= 0;
-  const lineColor = isPositive ? '#4df0b0' : '#ff4d6d';
-
+  const color = (data[data.length-1]||0) >= 0 ? '#4df0b0' : '#ff4d6d';
   equityChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: lineColor,
-        backgroundColor: `${lineColor}15`,
-        fill: true,
-        tension: 0.3,
-        pointRadius: 2,
-        pointHoverRadius: 5,
-        borderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        callbacks: { label: ctx => equityMode === 'usd' ? `$${ctx.raw.toFixed(2)}` : `${ctx.raw.toFixed(1)} pips` }
-      }},
-      scales: {
-        x: { ticks: { color: '#6b6b80', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 }, grid: { color: '#2a2a3a' } },
-        y: { ticks: { color: '#6b6b80', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#2a2a3a' } }
+    type:'line',
+    data:{ labels, datasets:[{ data, borderColor:color, backgroundColor:`${color}18`, fill:true, tension:0.3, pointRadius:2, pointHoverRadius:5, borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>equityMode==='usd'?`$${c.raw.toFixed(2)}`:`${c.raw.toFixed(1)} pips` } } },
+      scales:{
+        x:{ ticks:{color:'#6b6b80',font:{family:'DM Mono',size:9},maxTicksLimit:8}, grid:{color:'#2a2a3a'} },
+        y:{ ticks:{color:'#6b6b80',font:{family:'DM Mono',size:9}}, grid:{color:'#2a2a3a'} }
       }
     }
   });
 }
 
-function switchEquityTab(mode, btn) {
+function switchEquity(mode, btn) {
   equityMode = mode;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderEquityChart();
+  renderEquity();
 }
 
-function renderPatternChart() {
-  const patternMap = {};
+function renderPattern() {
+  const map = {};
   allTrades.forEach(t => {
-    const pat = t.pattern || '未標記';
-    if (!patternMap[pat]) patternMap[pat] = { wins: 0, total: 0, profit: 0 };
-    patternMap[pat].total++;
-    patternMap[pat].profit += t.profit || 0;
-    if ((t.profit || 0) > 0) patternMap[pat].wins++;
+    const k = t.pattern || '未標記';
+    if (!map[k]) map[k]={w:0,t:0,p:0};
+    map[k].t++; map[k].p+=(t.profit||0);
+    if ((t.profit||0)>0) map[k].w++;
   });
-
-  const labels = Object.keys(patternMap);
-  const winRates = labels.map(l => parseFloat((patternMap[l].wins / patternMap[l].total * 100).toFixed(1)));
-  const profits = labels.map(l => parseFloat(patternMap[l].profit.toFixed(2)));
-
-  const ctx = document.getElementById('patternChart').getContext('2d');
+  const labels=Object.keys(map);
+  const wr=labels.map(l=>parseFloat((map[l].w/map[l].t*100).toFixed(1)));
+  const pr=labels.map(l=>parseFloat(map[l].p.toFixed(2)));
+  const ctx=document.getElementById('patternChart').getContext('2d');
   if (patternChart) patternChart.destroy();
-
   patternChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: '勝率 %',
-          data: winRates,
-          backgroundColor: '#c8f13580',
-          borderColor: '#c8f135',
-          borderWidth: 1,
-          yAxisID: 'y',
-        },
-        {
-          label: '總盈虧 USD',
-          data: profits,
-          backgroundColor: profits.map(p => p >= 0 ? '#4df0b030' : '#ff4d6d30'),
-          borderColor: profits.map(p => p >= 0 ? '#4df0b0' : '#ff4d6d'),
-          borderWidth: 1,
-          yAxisID: 'y2',
-          type: 'line',
-          tension: 0.3,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#6b6b80', font: { family: 'DM Mono', size: 10 } } } },
-      scales: {
-        x: { ticks: { color: '#6b6b80', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#2a2a3a' } },
-        y: { ticks: { color: '#6b6b80', font: { family: 'DM Mono', size: 10 }, callback: v => v + '%' }, grid: { color: '#2a2a3a' }, max: 100 },
-        y2: { position: 'right', ticks: { color: '#6b6b80', font: { family: 'DM Mono', size: 10 }, callback: v => '$' + v }, grid: { display: false } }
+    type:'bar',
+    data:{ labels, datasets:[
+      { label:'勝率%', data:wr, backgroundColor:'#c8f13555', borderColor:'#c8f135', borderWidth:1, yAxisID:'y' },
+      { label:'總盈虧', data:pr, type:'line', backgroundColor:pr.map(p=>p>=0?'#4df0b025':'#ff4d6d25'), borderColor:pr.map(p=>p>=0?'#4df0b0':'#ff4d6d'), borderWidth:1.5, tension:0.3, yAxisID:'y2', pointRadius:3 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{color:'#6b6b80',font:{family:'DM Mono',size:9}}} },
+      scales:{
+        x:{ ticks:{color:'#6b6b80',font:{family:'DM Mono',size:9}}, grid:{color:'#2a2a3a'} },
+        y:{ ticks:{color:'#6b6b80',font:{family:'DM Mono',size:9},callback:v=>v+'%'}, grid:{color:'#2a2a3a'}, max:100 },
+        y2:{ position:'right', ticks:{color:'#6b6b80',font:{family:'DM Mono',size:9},callback:v=>'$'+v}, grid:{display:false} }
       }
     }
   });
 }
 
-// ─── HEATMAP ──────────────────────────────────────────────
+// ── HEATMAP ──────────────────────────────────────────
 function renderHeatmap() {
-  const days = ['一','二','三','四','五'];
-  const dayMap = { 1:0, 2:1, 3:2, 4:3, 5:4 };
-  const grid = Array(5).fill(null).map(() => Array(24).fill(null).map(() => ({ w:0, t:0 })));
-
-  allTrades.forEach(t => {
+  const days=['一','二','三','四','五'], dm={1:0,2:1,3:2,4:3,5:4};
+  const grid=Array(5).fill(null).map(()=>Array(24).fill(null).map(()=>({w:0,t:0})));
+  allTrades.forEach(t=>{
     if (!t.openTime) return;
-    const d = toTaiwanTime(t.openTime);
-    const dow = d.getDay();
-    if (!dayMap.hasOwnProperty(dow)) return;
-    const hr = d.getHours();
-    const row = dayMap[dow];
-    grid[row][hr].t++;
-    if ((t.profit || 0) > 0) grid[row][hr].w++;
+    const d=toTW(t.openTime), dow=d.getDay();
+    if (!dm.hasOwnProperty(dow)) return;
+    const cell=grid[dm[dow]][d.getHours()];
+    cell.t++; if((t.profit||0)>0) cell.w++;
   });
-
-  let html = '<div class="heatmap-grid">';
-  // Header row
-  html += '<div class="heatmap-header"></div>';
-  for (let h = 0; h < 24; h++) html += `<div class="heatmap-header">${h}</div>`;
-
-  days.forEach((day, i) => {
-    html += `<div class="heatmap-cell" style="color:var(--muted);background:transparent;font-size:0.7rem">${day}</div>`;
-    for (let h = 0; h < 24; h++) {
-      const cell = grid[i][h];
-      let bg = 'var(--surface2)';
-      let title = '無交易';
-      if (cell.t > 0) {
-        const wr = cell.w / cell.t;
-        if (wr >= 0.6) bg = `rgba(77,240,176,${0.3 + wr * 0.5})`;
-        else if (wr <= 0.4) bg = `rgba(255,77,109,${0.3 + (1-wr) * 0.4})`;
-        else bg = `rgba(200,241,53,0.3)`;
-        title = `${cell.t}筆 勝率${(wr*100).toFixed(0)}%`;
+  let html='<div class="heatmap-grid">';
+  html+='<div class="heatmap-header"></div>';
+  for(let h=0;h<24;h++) html+=`<div class="heatmap-header">${h}</div>`;
+  days.forEach((day,i)=>{
+    html+=`<div class="heatmap-cell" style="background:transparent;color:var(--muted);font-size:0.68rem">${day}</div>`;
+    for(let h=0;h<24;h++){
+      const c=grid[i][h]; let bg='var(--surface2)',tip='無交易';
+      if(c.t>0){
+        const r=c.w/c.t;
+        bg=r>=0.6?`rgba(77,240,176,${0.25+r*0.55})`:r<=0.4?`rgba(255,77,109,${0.25+(1-r)*0.45})`:'rgba(200,241,53,0.28)';
+        tip=`${c.t}筆 勝${(r*100).toFixed(0)}%`;
       }
-      html += `<div class="heatmap-cell" style="background:${bg}" title="${title}"></div>`;
+      html+=`<div class="heatmap-cell" style="background:${bg}" title="${tip}"></div>`;
     }
   });
-
-  html += '</div>';
-  document.getElementById('heatmapWrap').innerHTML = html;
+  html+='</div>';
+  document.getElementById('heatmapWrap').innerHTML=html;
 }
 
-// ─── TRADE TABLE ──────────────────────────────────────────
+// ── TABLE ────────────────────────────────────────────
 function sortBy(key) {
-  if (sortKey === key) sortDir *= -1;
-  else { sortKey = key; sortDir = -1; }
+  if (sortKey===key) sortDir*=-1; else { sortKey=key; sortDir=-1; }
   renderTable();
 }
-
 function resetTableFilters() {
-  ['tSymbol','tType','tPattern'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('tDateFrom').value = '';
-  document.getElementById('tDateTo').value = '';
+  ['tSymbol','tType','tPattern'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tDateFrom').value='';
+  document.getElementById('tDateTo').value='';
   renderTable();
 }
-
 function renderTable() {
-  const sym = document.getElementById('tSymbol').value;
-  const type = document.getElementById('tType').value;
-  const pat = document.getElementById('tPattern').value;
-  const from = document.getElementById('tDateFrom').value;
-  const to = document.getElementById('tDateTo').value;
-
-  filteredTrades = allTrades.filter(t => {
-    if (sym && t.symbol !== sym) return false;
-    if (type && t.type !== type) return false;
-    if (pat && t.pattern !== pat) return false;
-    if (from && t.closeTime && t.closeTime.slice(0,10) < from) return false;
-    if (to && t.closeTime && t.closeTime.slice(0,10) > to) return false;
+  const sym=document.getElementById('tSymbol').value;
+  const type=document.getElementById('tType').value;
+  const pat=document.getElementById('tPattern').value;
+  const from=document.getElementById('tDateFrom').value;
+  const to=document.getElementById('tDateTo').value;
+  filteredTrades=allTrades.filter(t=>{
+    if(sym&&t.symbol!==sym) return false;
+    if(type&&t.type!==type) return false;
+    if(pat&&t.pattern!==pat) return false;
+    if(from&&t.closeTime&&t.closeTime.slice(0,10)<from) return false;
+    if(to&&t.closeTime&&t.closeTime.slice(0,10)>to) return false;
     return true;
   });
-
-  // Sort
-  filteredTrades.sort((a, b) => {
-    let va = a[sortKey], vb = b[sortKey];
-    if (typeof va === 'string') return sortDir * va.localeCompare(vb || '');
-    return sortDir * ((va || 0) - (vb || 0));
+  filteredTrades.sort((a,b)=>{
+    let va=a[sortKey],vb=b[sortKey];
+    if(typeof va==='string') return sortDir*va.localeCompare(vb||'');
+    return sortDir*((va||0)-(vb||0));
   });
-
-  currentPage = 1;
-  renderTablePage();
+  currentPage=1; renderPage();
 }
-
-function renderTablePage() {
-  const start = (currentPage - 1) * perPage;
-  const pageData = filteredTrades.slice(start, start + perPage);
-  const tbody = document.getElementById('tradeTableBody');
-
-  tbody.innerHTML = pageData.map((t, i) => {
-    const profit = t.profit || 0;
-    const profitCls = profit > 0 ? 'positive' : profit < 0 ? 'negative' : '';
-    const pips = t.pips != null ? t.pips.toFixed(1) : '—';
+function renderPage() {
+  const start=(currentPage-1)*perPage;
+  const data=filteredTrades.slice(start,start+perPage);
+  const tbody=document.getElementById('tradeTableBody');
+  tbody.innerHTML=data.map(t=>{
+    const p=t.profit||0, pc=p>0?'positive':p<0?'negative':'';
     return `
-      <tr onclick="toggleRow('${t.id}', ${start + i})">
-        <td style="color:var(--muted)">${t.ticket || '—'}</td>
-        <td><strong>${t.symbol || '—'}</strong></td>
-        <td><span class="badge badge-${(t.type||'').toLowerCase()}">${t.type || '—'}</span></td>
-        <td>${t.lots != null ? t.lots : '—'}</td>
-        <td style="color:var(--muted)">${formatDT(t.openTime)}</td>
-        <td style="color:var(--muted)">${formatDT(t.closeTime)}</td>
-        <td class="${profitCls}">${profit >= 0 ? '+' : ''}${profit.toFixed(2)}</td>
-        <td class="${profit >= 0 ? 'positive' : 'negative'}">${pips}</td>
-        <td>${t.pattern ? `<span class="badge badge-type">${t.pattern}</span>` : '—'}</td>
+      <tr onclick="toggleRow('${t.id}')">
+        <td style="color:var(--muted)">${t.ticket||'—'}</td>
+        <td><strong>${t.symbol||'—'}</strong></td>
+        <td><span class="badge badge-${(t.type||'').toLowerCase()}">${t.type||'—'}</span></td>
+        <td>${t.lots??'—'}</td>
+        <td style="color:var(--muted)">${fmtDT(t.openTime)}</td>
+        <td style="color:var(--muted)">${fmtDT(t.closeTime)}</td>
+        <td class="${pc}">${p>=0?'+':''}${p.toFixed(2)}</td>
+        <td class="${pc}">${t.pips!=null?t.pips.toFixed(1):'—'}</td>
+        <td>${t.pattern?`<span class="badge badge-type">${t.pattern}</span>`:'—'}</td>
+        <td style="color:var(--muted)">${t.timeframe||'—'}</td>
       </tr>
       <tr class="expand-row" id="expand-${t.id}">
-        <td colspan="9">
-          <div class="expand-content" id="expand-content-${t.id}">
+        <td colspan="10">
+          <div class="expand-content" id="ec-${t.id}">
             <div class="loading"><div class="spinner"></div>讀取中...</div>
           </div>
         </td>
-      </tr>
-    `;
+      </tr>`;
   }).join('');
-
-  if (!pageData.length) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty">沒有符合的交易紀錄</div></td></tr>';
-  }
-
+  if(!data.length) tbody.innerHTML='<tr><td colspan="10"><div class="empty">沒有符合的交易</div></td></tr>';
   renderPagination();
 }
-
 function renderPagination() {
-  const total = Math.ceil(filteredTrades.length / perPage);
-  const el = document.getElementById('pagination');
-  if (total <= 1) { el.innerHTML = ''; return; }
-
-  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
-  for (let i = 1; i <= total; i++) {
-    if (i === 1 || i === total || Math.abs(i - currentPage) <= 2) {
-      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-    } else if (Math.abs(i - currentPage) === 3) {
-      html += `<span class="page-info">...</span>`;
-    }
+  const total=Math.ceil(filteredTrades.length/perPage);
+  const el=document.getElementById('pagination');
+  if(total<=1){el.innerHTML='';return;}
+  let html=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for(let i=1;i<=total;i++){
+    if(i===1||i===total||Math.abs(i-currentPage)<=2)
+      html+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    else if(Math.abs(i-currentPage)===3) html+=`<span class="page-info">…</span>`;
   }
-  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>›</button>`;
-  html += `<span class="page-info">${filteredTrades.length} 筆</span>`;
-  el.innerHTML = html;
+  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>›</button>`;
+  html+=`<span class="page-info">${filteredTrades.length} 筆</span>`;
+  el.innerHTML=html;
 }
-
 function goPage(p) {
-  const total = Math.ceil(filteredTrades.length / perPage);
-  if (p < 1 || p > total) return;
-  currentPage = p;
-  renderTablePage();
+  const total=Math.ceil(filteredTrades.length/perPage);
+  if(p<1||p>total) return;
+  currentPage=p; renderPage();
 }
 
-// ─── EXPAND ROW ───────────────────────────────────────────
-let openRow = null;
-
-async function toggleRow(id, idx) {
-  const row = document.getElementById(`expand-${id}`);
-  if (openRow === id) {
-    row.classList.remove('open');
-    openRow = null;
-    return;
-  }
-  if (openRow) {
-    document.getElementById(`expand-${openRow}`)?.classList.remove('open');
-  }
-  openRow = id;
-  row.classList.add('open');
-
-  const content = document.getElementById(`expand-content-${id}`);
-  content.innerHTML = '<div class="loading"><div class="spinner"></div>讀取中...</div>';
-
+// ── EXPAND ───────────────────────────────────────────
+async function toggleRow(id) {
+  const row=document.getElementById(`expand-${id}`);
+  if(openRowId===id){ row.classList.remove('open'); openRowId=null; return; }
+  if(openRowId) document.getElementById(`expand-${openRowId}`)?.classList.remove('open');
+  openRowId=id; row.classList.add('open');
+  const content=document.getElementById(`ec-${id}`);
+  content.innerHTML='<div class="loading"><div class="spinner"></div>讀取中...</div>';
   try {
-    const blocks = await fetchPageContent(id);
-    let textBlocks = [];
-    let images = [];
-
-    (blocks.results || []).forEach(b => {
-      if (b.type === 'paragraph' && b.paragraph?.rich_text?.length) {
-        textBlocks.push(b.paragraph.rich_text.map(r => r.plain_text).join(''));
-      }
-      if (b.type === 'image') {
-        const url = b.image?.file?.url || b.image?.external?.url;
-        if (url) images.push(url);
+    const blocks=await fetchBlocks(id);
+    const texts=[],imgs=[];
+    (blocks.results||[]).forEach(b=>{
+      if(b.type==='paragraph'&&b.paragraph?.rich_text?.length)
+        texts.push(b.paragraph.rich_text.map(r=>r.plain_text).join(''));
+      if(b.type==='image'){
+        const u=b.image?.file?.url||b.image?.external?.url;
+        if(u) imgs.push(u);
       }
     });
-
-    const trade = allTrades.find(t => t.id === id);
-    const details = trade ? `
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.75rem;margin-bottom:1.5rem">
-        ${[
-          ['開倉價', trade.openPrice?.toFixed(5)],
-          ['平倉價', trade.closePrice?.toFixed(5)],
-          ['止損', trade.sl?.toFixed(5) || '—'],
-          ['止盈', trade.tp?.toFixed(5) || '—'],
-          ['持倉時間', trade.openTime && trade.closeTime ? formatMinutes(holdingMinutes(trade.openTime, trade.closeTime)) : '—'],
-          ['週期', trade.timeframe || '—'],
-          ['備註', trade.comment || '—'],
-        ].map(([l,v]) => `
-          <div>
-            <div style="font-size:0.6rem;color:var(--muted);margin-bottom:0.25rem">${l}</div>
-            <div style="font-size:0.8rem">${v || '—'}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : '';
-
-    content.innerHTML = `
-      ${details}
+    const t=allTrades.find(x=>x.id===id);
+    const meta=t?`
+      <div class="expand-meta">
+        ${[['開倉價',t.openPrice?.toFixed(5)],['平倉價',t.closePrice?.toFixed(5)],['止損',t.sl?.toFixed(5)||'—'],['止盈',t.tp?.toFixed(5)||'—'],['持倉',t.openTime&&t.closeTime?fmtMin(holdMin(t.openTime,t.closeTime)):'—'],['週期',t.timeframe||'—'],['備註',t.comment||'—']].map(([l,v])=>`
+          <div class="expand-meta-item"><div class="label">${l}</div><div class="val">${v||'—'}</div></div>`).join('')}
+      </div>`:'' ;
+    content.innerHTML=`${meta}
       <div class="expand-grid">
         <div>
-          <div class="expand-section-title">交易說明</div>
-          <div class="expand-text">${textBlocks.join('\n') || '（無說明）'}</div>
+          <div class="expand-section-title">說明</div>
+          <div class="expand-text">${texts.join('\n')||t?.note||'（無說明）'}</div>
         </div>
         <div>
           <div class="expand-section-title">截圖</div>
-          ${images.length ? `
-            <div class="expand-imgs">
-              ${images.map(url => `<img class="expand-img" src="${url}" onclick="openLightbox('${url}',event)">`).join('')}
-            </div>
-          ` : '<div style="color:var(--muted);font-size:0.75rem">（無截圖）</div>'}
+          ${imgs.length?`<div class="expand-imgs">${imgs.map(u=>`<img class="expand-img" src="${u}" onclick="openLB('${u}',event)">`).join('')}</div>`:'<div style="color:var(--muted);font-size:0.75rem">（無截圖）</div>'}
         </div>
-      </div>
-    `;
+      </div>`;
   } catch(e) {
-    content.innerHTML = '<div style="color:var(--loss);padding:1rem">讀取失敗</div>';
+    content.innerHTML='<div style="color:var(--loss);padding:1rem">讀取失敗</div>';
   }
 }
 
-// ─── LIGHTBOX ─────────────────────────────────────────────
-function openLightbox(url, e) {
+// ── LIGHTBOX ─────────────────────────────────────────
+function openLB(url,e) {
   e.stopPropagation();
-  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxImg').src=url;
   document.getElementById('lightbox').classList.add('open');
 }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
 
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-}
-
-// ─── PAGE NAV ─────────────────────────────────────────────
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+// ── NAV ──────────────────────────────────────────────
+function showPage(name,btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
-  event.target.classList.add('active');
+  btn.classList.add('active');
 }
 
-// ─── INIT ─────────────────────────────────────────────────
+// ── INIT ─────────────────────────────────────────────
 loadSettings();
 loadData();
 </script>
