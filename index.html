@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --cream:    #f5f0e8;
+  --cream2:   #ede7d9;
+  --cream3:   #e3dbd0;
+  --paper:    #faf8f4;
+  --ink:      #1a1814;
+  --ink2:     #3d3a35;
+  --ink3:     #7a756d;
+  --ink4:     #b0aa9f;
+  --border:   #d8d2c8;
+  --border2:  #ede7d9;
+  --win:      #2d6a4f;
+  --win-bg:   #d8f3dc;
+  --loss:     #9b2335;
+  --loss-bg:  #fde8ea;
+  --accent:   #c17f3e;
+  --accent-bg:#f7eed8;
+  --blue:     #2d5fa1;
+  --blue-bg:  #dbeafe;
+  --shadow:   0 1px 3px rgba(26,24,20,0.06), 0 4px 16px rgba(26,24,20,0.04);
+  --shadow-md:0 4px 24px rgba(26,24,20,0.10);
+  --radius:   10px;
+  --radius-sm:6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--cream2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ── NAV ── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  background: rgba(245,240,232,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; height: 52px;
+}
+
+.nav-brand {
+  display: flex; align-items: baseline; gap: 0.35rem;
+}
+.nav-brand-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 600;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.nav-brand-sub {
+  font-size: 0.65rem; color: var(--ink4);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.nav-tabs {
+  display: flex; gap: 0;
+  background: var(--cream2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 2px;
+  gap: 2px;
+}
+.nav-tab {
+  padding: 0.3rem 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 400;
+  color: var(--ink3);
+  border: none; background: transparent;
+  border-radius: 6px;
+  cursor: pointer; transition: all 0.18s;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: var(--ink); background: var(--cream3); }
+.nav-tab.active {
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(26,24,20,0.08);
+}
+
+.nav-right { display: flex; align-items: center; gap: 0.75rem; }
+.update-badge {
+  font-size: 0.68rem; color: var(--ink4);
+  font-family: 'DM Mono', monospace;
+  background: var(--cream2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0.15rem 0.6rem;
+}
+.btn-refresh {
+  display: flex; align-items: center; gap: 0.3rem;
+  background: var(--ink); color: var(--cream);
+  border: none; border-radius: 7px;
+  padding: 0.35rem 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.btn-refresh:hover { opacity: 0.8; }
+.btn-refresh svg { width: 13px; height: 13px; }
+
+/* ── LAYOUT ── */
+main { padding-top: 52px; }
+.page { display: none; padding: 2rem 1.5rem; max-width: 1320px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ── SECTION HEADERS ── */
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 1rem; margin-top: 2rem;
+}
+.section-head:first-child { margin-top: 0; }
+.section-label {
+  font-size: 0.68rem; font-weight: 500;
+  color: var(--ink4); letter-spacing: 0.12em;
+  text-transform: uppercase; font-family: 'DM Mono', monospace;
+}
+
+/* ── STAT CARDS ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+@media(max-width:900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:500px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+
+.kpi {
+  background: var(--paper);
+  padding: 1.25rem 1.35rem;
+  transition: background 0.15s;
+}
+.kpi:hover { background: var(--cream2); }
+.kpi-label {
+  font-size: 0.68rem; color: var(--ink4);
+  letter-spacing: 0.06em; margin-bottom: 0.35rem;
+  text-transform: uppercase; font-weight: 500;
+}
+.kpi-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem; font-weight: 600;
+  line-height: 1.1; letter-spacing: -0.02em;
+  margin-bottom: 0.15rem;
+}
+.kpi-sub { font-size: 0.7rem; color: var(--ink4); }
+
+.val-win  { color: var(--win); }
+.val-loss { color: var(--loss); }
+.val-ink  { color: var(--ink); }
+.val-accent { color: var(--accent); }
+
+/* ── TAG/BADGE ── */
+.tag {
+  display: inline-flex; align-items: center;
+  font-size: 0.68rem; font-weight: 500;
+  padding: 0.18rem 0.5rem; border-radius: 99px;
+  letter-spacing: 0.02em;
+}
+.tag-buy  { background: var(--win-bg);  color: var(--win); }
+.tag-sell { background: var(--loss-bg); color: var(--loss); }
+.tag-neutral { background: var(--cream2); color: var(--ink3); border: 1px solid var(--border); }
+.tag-accent { background: var(--accent-bg); color: var(--accent); }
+
+/* ── CHARTS ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media(max-width:768px) { .charts-grid { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+  box-shadow: var(--shadow);
+}
+.chart-card.wide { grid-column: 1 / -1; }
+
+.chart-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.1rem;
+}
+.chart-name {
+  font-size: 0.82rem; font-weight: 500; color: var(--ink);
+}
+.chart-name em {
+  font-family: 'Playfair Display', serif;
+  font-style: italic; font-size: 1rem;
+}
+
+.seg {
+  display: flex; gap: 0; background: var(--cream2);
+  border: 1px solid var(--border); border-radius: 6px; overflow: hidden; padding: 2px; gap: 2px;
+}
+.seg-btn {
+  padding: 0.2rem 0.55rem; font-size: 0.68rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--ink3); background: transparent;
+  border: none; border-radius: 4px; cursor: pointer; transition: all 0.15s;
+}
+.seg-btn.active { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgba(26,24,20,0.07); }
+
+.chart-body { position: relative; height: 200px; }
+
+/* ── HEATMAP ── */
+.heatmap-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.hmap {
+  display: grid;
+  grid-template-columns: 32px repeat(24, minmax(18px,1fr));
+  gap: 3px; min-width: 540px;
+}
+.hmap-h { height: 18px; display: flex; align-items: flex-end; justify-content: center; font-size: 0.55rem; color: var(--ink4); font-family: 'DM Mono', monospace; }
+.hmap-day { height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--ink4); font-weight: 500; }
+.hmap-cell {
+  height: 24px; border-radius: 4px;
+  background: var(--cream2);
+  cursor: default; position: relative;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.hmap-cell:hover { transform: scale(1.25); z-index: 5; box-shadow: var(--shadow-md); }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  align-items: center; margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 0.1rem; flex-shrink: 0; }
+.filter-label { font-size: 0.68rem; color: var(--ink4); white-space: nowrap; }
+
+select, input[type=date], input[type=number] {
+  background: var(--cream2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+}
+select:focus, input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(193,127,62,0.12);
+}
+
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--ink3); padding: 0.3rem 0.75rem;
+  border-radius: 6px; font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; cursor: pointer; transition: all 0.15s;
+}
+.btn-ghost:hover { border-color: var(--ink3); color: var(--ink); }
+
+/* ── FILTERED STATS ── */
+.fsummary {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  margin-bottom: 1.5rem; box-shadow: var(--shadow);
+}
+@media(max-width:500px) { .fsummary { grid-template-columns: 1fr; } }
+.fstat { background: var(--cream2); padding: 1rem 1.25rem; }
+
+/* ── TABLE ── */
+.tbl-wrap {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+thead { border-bottom: 1px solid var(--border2); }
+th {
+  padding: 0.7rem 1rem; text-align: left;
+  font-size: 0.65rem; letter-spacing: 0.08em;
+  color: var(--ink4); font-weight: 500;
+  text-transform: uppercase; white-space: nowrap;
+  cursor: pointer; user-select: none;
+  background: var(--cream2);
+  font-family: 'DM Mono', monospace;
+}
+th:hover { color: var(--ink); }
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border2);
+  vertical-align: middle; white-space: nowrap;
+  color: var(--ink2);
+}
+tr:last-child td { border-bottom: none; }
+tbody tr { cursor: pointer; transition: background 0.12s; }
+tbody tr:hover td { background: var(--cream2); }
+
+/* ── EXPAND ── */
+.expand-row { display: none; }
+.expand-row.open { display: table-row; }
+.expand-cell {
+  padding: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--cream) !important;
+}
+.expand-inner {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border2);
+}
+.expand-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dashed var(--border);
+}
+.emeta-item .el { font-size: 0.62rem; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem; font-family: 'DM Mono', monospace; }
+.emeta-item .ev { font-size: 0.82rem; color: var(--ink); font-weight: 500; }
+.expand-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media(max-width:600px) { .expand-body { grid-template-columns: 1fr; } }
+.expand-section-label {
+  font-size: 0.62rem; color: var(--ink4);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  font-family: 'DM Mono', monospace; margin-bottom: 0.65rem;
+}
+.expand-note {
+  font-size: 0.82rem; line-height: 1.75; color: var(--ink2);
+  white-space: pre-wrap;
+  background: var(--cream2);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border2);
+  min-height: 60px;
+}
+.img-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.thumb {
+  width: 110px; height: 72px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.thumb:hover { transform: scale(1.06); box-shadow: var(--shadow-md); }
+
+/* ── LIGHTBOX ── */
+.lb {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,24,20,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.lb.open { display: flex; }
+.lb img { max-width: 90vw; max-height: 90vh; border-radius: var(--radius); box-shadow: var(--shadow-md); }
+.lb-close {
+  position: absolute; top: 1.25rem; right: 1.5rem;
+  background: var(--paper); border: none; border-radius: 99px;
+  width: 32px; height: 32px;
+  font-size: 1.1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); transition: opacity 0.15s;
+}
+.lb-close:hover { opacity: 0.7; }
+
+/* ── PAGINATION ── */
+.pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.3rem; padding: 0.85rem;
+  border-top: 1px solid var(--border2);
+}
+.pg-btn {
+  background: var(--cream2); border: 1px solid var(--border);
+  color: var(--ink2); padding: 0.25rem 0.55rem;
+  border-radius: 5px; font-family: 'DM Mono', monospace;
+  font-size: 0.72rem; cursor: pointer; transition: all 0.15s;
+}
+.pg-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pg-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.pg-btn:disabled { opacity: 0.3; pointer-events: none; }
+.pg-info { font-size: 0.68rem; color: var(--ink4); margin: 0 0.25rem; font-family: 'DM Mono', monospace; }
+
+/* ── SETTINGS ── */
+.settings-wrap { max-width: 500px; }
+.settings-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.35rem;
+  border-bottom: 1px solid var(--border2);
+}
+.settings-row:last-child { border-bottom: none; }
+.sl { font-size: 0.82rem; font-weight: 500; color: var(--ink); }
+.sd { font-size: 0.7rem; color: var(--ink4); margin-top: 0.15rem; }
+.btn-save {
+  background: var(--ink); color: var(--cream);
+  border: none; border-radius: 7px;
+  padding: 0.4rem 1.1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 500;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.btn-save:hover { opacity: 0.8; }
+
+/* ── LOADING / EMPTY ── */
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  padding: 4rem; gap: 0.65rem;
+  color: var(--ink4); font-size: 0.82rem;
+}
+.spin {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { text-align: center; padding: 3rem; color: var(--ink4); font-size: 0.82rem; }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border2); margin: 1.5rem 0; }
+
+/* ── MOBILE ── */
+@media(max-width:600px) {
+  .nav { padding: 0 1rem; }
+  .nav-brand-sub { display: none; }
+  .page { padding: 1rem; }
+  .update-badge { display: none; }
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  th, td { padding: 0.6rem 0.75rem; font-size: 0.72rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <span class="nav-brand-title">Trading Journal</span>
+    <span class="nav-brand-sub">/ personal</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('overview',this)">總覽</button>
+    <button class="nav-tab" onclick="showPage('trades',this)">交易紀錄</button>
+    <button class="nav-tab" onclick="showPage('settings',this)">設定</button>
+  </div>
+  <div class="nav-right">
+    <span class="update-badge" id="updateTime">—</span>
+    <button class="btn-refresh" onclick="loadData()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2"/><polyline points="10 2 14 2 14 6"/></svg>
+      更新
+    </button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ── 總覽 ── -->
+<div class="page active" id="page-overview">
+  <div id="ovLoad" class="loading"><div class="spin"></div>讀取資料中…</div>
+  <div id="ovContent" style="display:none">
+
+    <div class="section-head"><span class="section-label">整體績效</span></div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">總盈虧</div>
+        <div class="kpi-value" id="kTotalP">—</div>
+        <div class="kpi-sub" id="kTotalPips">— pips</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">勝率</div>
+        <div class="kpi-value val-accent" id="kWinRate">—</div>
+        <div class="kpi-sub" id="kWLCount">— 勝 / — 敗</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">盈虧比</div>
+        <div class="kpi-value val-accent" id="kRR">—</div>
+        <div class="kpi-sub">平均獲利 ÷ 平均虧損</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">總交易筆數</div>
+        <div class="kpi-value val-ink" id="kTotal">—</div>
+        <div class="kpi-sub">筆歷史交易</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">最大連續虧損</div>
+        <div class="kpi-value val-loss" id="kMaxC">—</div>
+        <div class="kpi-sub" id="kMaxCAmt">— USD</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">最大單筆虧損</div>
+        <div class="kpi-value val-loss" id="kMaxS">—</div>
+        <div class="kpi-sub">單筆最大</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">平均持倉時間</div>
+        <div class="kpi-value val-ink" id="kAvgH">—</div>
+        <div class="kpi-sub">每筆平均</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">本月盈虧</div>
+        <div class="kpi-value" id="kMonthP">—</div>
+        <div class="kpi-sub" id="kMonthSub">當月累計</div>
+      </div>
+    </div>
+
+    <div class="section-head"><span class="section-label">圖表分析</span></div>
+    <div class="charts-grid">
+      <div class="chart-card wide">
+        <div class="chart-top">
+          <span class="chart-name"><em>資金曲線</em></span>
+          <div class="seg">
+            <button class="seg-btn active" onclick="switchEq('usd',this)">USD</button>
+            <button class="seg-btn" onclick="switchEq('pips',this)">Pips</button>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="cEquity"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-top"><span class="chart-name"><em>型態績效</em></span></div>
+        <div class="chart-body"><canvas id="cPattern"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-top"><span class="chart-name"><em>時段熱力圖</em> <span style="font-family:'DM Mono';font-style:normal;font-size:0.68rem;color:var(--ink4)">台灣時間</span></span></div>
+        <div class="heatmap-wrap"><div id="hmapWrap"></div></div>
+      </div>
+    </div>
+
+    <div class="section-head"><span class="section-label">篩選統計</span></div>
+    <div class="filter-bar">
+      <span class="filter-label">幣對</span>
+      <select id="fSym" onchange="updateFS()"><option value="">全部</option></select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">週期</span>
+      <select id="fTF" onchange="updateFS()"><option value="">全部</option></select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">型態</span>
+      <select id="fPat" onchange="updateFS()"><option value="">全部</option></select>
+      <button class="btn-ghost" onclick="resetOvFilters()">重設</button>
+    </div>
+    <div class="fsummary">
+      <div class="fstat">
+        <div class="kpi-label">篩選總盈虧</div>
+        <div class="kpi-value" id="fTP">—</div>
+      </div>
+      <div class="fstat">
+        <div class="kpi-label">篩選勝率</div>
+        <div class="kpi-value val-accent" id="fWR">—</div>
+      </div>
+      <div class="fstat">
+        <div class="kpi-label">篩選盈虧比</div>
+        <div class="kpi-value val-accent" id="fRR">—</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── 交易紀錄 ── -->
+<div class="page" id="page-trades">
+  <div id="trLoad" class="loading"><div class="spin"></div>讀取資料中…</div>
+  <div id="trContent" style="display:none">
+    <div class="filter-bar" style="margin-bottom:1rem">
+      <span class="filter-label">幣對</span>
+      <select id="tSym" onchange="renderTbl()"><option value="">全部</option></select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">方向</span>
+      <select id="tType" onchange="renderTbl()">
+        <option value="">全部</option><option>Buy</option><option>Sell</option>
+      </select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">型態</span>
+      <select id="tPat" onchange="renderTbl()"><option value="">全部</option></select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">從</span>
+      <input type="date" id="tFrom" onchange="renderTbl()">
+      <span class="filter-label">至</span>
+      <input type="date" id="tTo" onchange="renderTbl()">
+      <button class="btn-ghost" onclick="resetTblFilters()">重設</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('ticket')"># 票號</th>
+            <th onclick="sortBy('symbol')">幣對</th>
+            <th onclick="sortBy('type')">方向</th>
+            <th onclick="sortBy('lots')">手數</th>
+            <th onclick="sortBy('openTime')">開倉（台灣）</th>
+            <th onclick="sortBy('closeTime')">平倉（台灣）</th>
+            <th onclick="sortBy('profit')">盈虧 USD</th>
+            <th onclick="sortBy('pips')">Pips</th>
+            <th>型態</th>
+            <th>週期</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+      <div class="pagination" id="pgBar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 設定 ── -->
+<div class="page" id="page-settings">
+  <div class="section-head"><span class="section-label">系統設定</span></div>
+  <div class="settings-wrap">
+    <div class="settings-card">
+      <div class="settings-row">
+        <div>
+          <div class="sl">伺服器時區</div>
+          <div class="sd">夏令/冬令時間請調整，儲存後立即生效</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.4rem">
+          <span style="font-size:0.78rem;color:var(--ink4)">UTC +</span>
+          <input type="number" id="svrOff" min="-12" max="14" value="3" style="width:56px;text-align:center">
+        </div>
+      </div>
+      <div class="settings-row">
+        <div><div class="sl">每頁顯示筆數</div></div>
+        <select id="perPg">
+          <option value="20">20 筆</option>
+          <option value="50" selected>50 筆</option>
+          <option value="100">100 筆</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <div></div>
+        <button class="btn-save" onclick="saveSettings()">儲存設定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="closeLB()">
+  <button class="lb-close">✕</button>
+  <img id="lbImg" src="" alt="">
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────
+const WORKER = 'https://notion-proxy.clade-clade-mi.workers.dev';
+const DB_ID  = '3625992245dd80b69fb7f1894010dc60';
+
+// ── STATE ────────────────────────────────
+let all=[], filtered=[];
+let curPage=1, perPage=50;
+let sortKey='closeTime', sortDir=-1;
+let svrOff=3, eqMode='usd';
+let eqChart=null, patChart=null;
+let openRow=null;
+
+// ── SETTINGS ─────────────────────────────
+function loadSettings(){
+  svrOff  = parseInt(localStorage.getItem('svrOff')||'3');
+  perPage = parseInt(localStorage.getItem('perPage')||'50');
+  document.getElementById('svrOff').value = svrOff;
+  document.getElementById('perPg').value  = perPage;
+}
+function saveSettings(){
+  svrOff  = parseInt(document.getElementById('svrOff').value);
+  perPage = parseInt(document.getElementById('perPg').value);
+  localStorage.setItem('svrOff', svrOff);
+  localStorage.setItem('perPage', perPage);
+  renderTbl(); drawCharts();
+  alert('已儲存 ✓');
+}
+
+// ── TIME ─────────────────────────────────
+function toTW(iso){
+  if(!iso) return null;
+  const d=new Date(iso);
+  return new Date(d.getTime()-svrOff*3600000+8*3600000);
+}
+function fDT(iso){
+  const d=toTW(iso); if(!d) return '—';
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function holdMin(o,c){ return (!o||!c)?0:Math.round((new Date(c)-new Date(o))/60000); }
+function fMin(m){ if(m<60)return`${m}m`; const h=Math.floor(m/60),r=m%60; return r?`${h}h ${r}m`:`${h}h`; }
+
+// ── API ──────────────────────────────────
+async function fetchAll(){
+  let res=[],cur,more=true;
+  while(more){
+    const body={page_size:100}; if(cur) body.start_cursor=cur;
+    const r=await fetch(`${WORKER}/v1/databases/${DB_ID}/query`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    res=res.concat(d.results||[]);
+    more=d.has_more||false; cur=d.next_cursor;
+  }
+  return res;
+}
+async function fetchBlocks(id){
+  const r=await fetch(`${WORKER}/v1/blocks/${id}/children`);
+  return await r.json();
+}
+
+// ── PARSE ────────────────────────────────
+function parse(pg){
+  const p=pg.properties;
+  const title=k=>p[k]?.title?.[0]?.plain_text||'';
+  const sel  =k=>p[k]?.select?.name||'';
+  const num  =k=>p[k]?.number??null;
+  const date =k=>p[k]?.date?.start||null;
+  const text =k=>p[k]?.rich_text?.[0]?.plain_text||'';
+  return {
+    id:pg.id,
+    ticket:title('Ticket'),
+    symbol:sel('Symbol'),
+    type:sel('Type (Buy/Sell)'),
+    lots:num('Lots'),
+    openPrice:num('Open price'),
+    closePrice:num('Close Price'),
+    profit:num('Profit'),
+    pips:num('Pips'),
+    sl:num('Stop Loss'),
+    tp:num('Take Profit'),
+    openTime:date('Open Time'),
+    closeTime:date('Close Time'),
+    comment:text('Comment'),
+    pattern:sel('Pattern'),
+    timeframe:sel('時區'),
+    note:text('說明'),
+  };
+}
+
+// ── LOAD ─────────────────────────────────
+async function loadData(){
+  ['ovLoad','trLoad'].forEach(id=>document.getElementById(id).style.display='flex');
+  ['ovContent','trContent'].forEach(id=>document.getElementById(id).style.display='none');
+  try{
+    const pages=await fetchAll();
+    all=pages.map(parse).sort((a,b)=>new Date(a.closeTime)-new Date(b.closeTime));
+    const now=new Date();
+    document.getElementById('updateTime').textContent=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} 更新`;
+    populateFilters(); renderOverview(); drawCharts(); renderTbl();
+    ['ovLoad','trLoad'].forEach(id=>document.getElementById(id).style.display='none');
+    ['ovContent','trContent'].forEach(id=>document.getElementById(id).style.display='block');
+  }catch(e){
+    console.error(e);
+    document.getElementById('ovLoad').innerHTML='<div style="color:var(--loss)">讀取失敗，請確認設定</div>';
+  }
+}
+
+// ── FILTERS ──────────────────────────────
+function populateFilters(){
+  const uniq=k=>[...new Set(all.map(t=>t[k]).filter(Boolean))].sort();
+  const syms=uniq('symbol'), pats=uniq('pattern'), tfs=uniq('timeframe');
+  ['fSym','tSym'].forEach(id=>{const e=document.getElementById(id);e.innerHTML='<option value="">全部</option>'+syms.map(s=>`<option>${s}</option>`).join('');});
+  ['fPat','tPat'].forEach(id=>{const e=document.getElementById(id);e.innerHTML='<option value="">全部</option>'+pats.map(p=>`<option>${p}</option>`).join('');});
+  document.getElementById('fTF').innerHTML='<option value="">全部</option>'+tfs.map(t=>`<option>${t}</option>`).join('');
+}
+
+// ── STATS ─────────────────────────────────
+function calcStats(trades){
+  if(!trades.length) return{totalProfit:0,totalPips:0,winRate:0,wins:0,losses:0,rr:0,maxC:0,maxCAmt:0,maxS:0,avgH:0,monthP:0};
+  const wins=trades.filter(t=>(t.profit||0)>0), losses=trades.filter(t=>(t.profit||0)<=0);
+  const avgW=wins.length?wins.reduce((s,t)=>s+t.profit,0)/wins.length:0;
+  const avgL=losses.length?Math.abs(losses.reduce((s,t)=>s+t.profit,0)/losses.length):0;
+  let maxC=0,c=0,maxCAmt=0,cAmt=0;
+  trades.forEach(t=>{ if((t.profit||0)<=0){c++;cAmt+=(t.profit||0);}else{c=0;cAmt=0;} if(c>maxC){maxC=c;maxCAmt=cAmt;} });
+  const holds=trades.filter(t=>t.openTime&&t.closeTime).map(t=>holdMin(t.openTime,t.closeTime));
+  const avgH=holds.length?Math.round(holds.reduce((a,b)=>a+b,0)/holds.length):0;
+  const now=new Date(), month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthP=trades.filter(t=>t.closeTime&&t.closeTime.slice(0,7)===month).reduce((s,t)=>s+(t.profit||0),0);
+  return{
+    totalProfit:trades.reduce((s,t)=>s+(t.profit||0),0),
+    totalPips:trades.reduce((s,t)=>s+(t.pips||0),0),
+    winRate:wins.length/trades.length*100,
+    wins:wins.length, losses:losses.length,
+    rr:avgL>0?avgW/avgL:0,
+    maxC, maxCAmt,
+    maxS:Math.min(...trades.map(t=>t.profit||0)),
+    avgH, monthP
+  };
+}
+
+// ── OVERVIEW ─────────────────────────────
+function renderOverview(){
+  const s=calcStats(all);
+  const sgn=(n,d=2)=>(n>=0?'+':'')+n.toFixed(d);
+  const set=(id,v,cls)=>{const e=document.getElementById(id);e.textContent=v;if(cls){e.className='kpi-value '+cls;}};
+  set('kTotalP',`$${sgn(s.totalProfit)}`,s.totalProfit>=0?'val-win':'val-loss');
+  document.getElementById('kTotalPips').textContent=`${sgn(s.totalPips,1)} pips`;
+  set('kWinRate',`${s.winRate.toFixed(1)}%`,'val-accent');
+  document.getElementById('kWLCount').textContent=`${s.wins} 勝 / ${s.losses} 敗`;
+  set('kRR',s.rr.toFixed(2),'val-accent');
+  set('kTotal',all.length,'val-ink');
+  set('kMaxC',`${s.maxC} 連敗`,'val-loss');
+  document.getElementById('kMaxCAmt').textContent=`${s.maxCAmt.toFixed(2)} USD`;
+  set('kMaxS',`$${s.maxS.toFixed(2)}`,'val-loss');
+  set('kAvgH',fMin(s.avgH),'val-ink');
+  set('kMonthP',`$${sgn(s.monthP)}`,s.monthP>=0?'val-win':'val-loss');
+  updateFS(); renderHeatmap();
+}
+
+function updateFS(){
+  const sym=document.getElementById('fSym').value;
+  const tf =document.getElementById('fTF').value;
+  const pat=document.getElementById('fPat').value;
+  let f=all;
+  if(sym) f=f.filter(t=>t.symbol===sym);
+  if(tf)  f=f.filter(t=>t.timeframe===tf);
+  if(pat) f=f.filter(t=>t.pattern===pat);
+  const s=calcStats(f);
+  const sgn=(n,d=2)=>(n>=0?'+':'')+n.toFixed(d);
+  const fp=document.getElementById('fTP'); fp.textContent=`$${sgn(s.totalProfit)}`; fp.className='kpi-value '+(s.totalProfit>=0?'val-win':'val-loss');
+  document.getElementById('fWR').textContent=`${s.winRate.toFixed(1)}%`;
+  document.getElementById('fRR').textContent=s.rr.toFixed(2);
+}
+function resetOvFilters(){ ['fSym','fTF','fPat'].forEach(id=>document.getElementById(id).value=''); updateFS(); }
+
+// ── CHARTS ───────────────────────────────
+function drawCharts(){ drawEquity(); drawPattern(); }
+
+const chartDefaults={
+  color:'#7a756d',
+  font:{family:"'DM Mono', monospace",size:10},
+  grid:'#e3dbd0'
+};
+
+function drawEquity(){
+  const sorted=[...all].sort((a,b)=>new Date(a.closeTime)-new Date(b.closeTime));
+  let cum=0; const labels=[],data=[];
+  sorted.forEach(t=>{ cum+=eqMode==='usd'?(t.profit||0):(t.pips||0); labels.push(fDT(t.closeTime).slice(0,10)); data.push(parseFloat(cum.toFixed(2))); });
+  const ctx=document.getElementById('cEquity').getContext('2d');
+  if(eqChart) eqChart.destroy();
+  const last=data[data.length-1]||0;
+  const col=last>=0?'#2d6a4f':'#9b2335';
+  const bg=last>=0?'rgba(45,106,79,0.08)':'rgba(155,35,53,0.08)';
+  eqChart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{data,borderColor:col,backgroundColor:bg,fill:true,tension:0.35,pointRadius:0,pointHoverRadius:4,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eqMode==='usd'?`$${c.raw.toFixed(2)}`:`${c.raw.toFixed(1)} pips`},backgroundColor:'#faf8f4',titleColor:'#1a1814',bodyColor:'#3d3a35',borderColor:'#d8d2c8',borderWidth:1,padding:8}},
+      scales:{
+        x:{ticks:{color:chartDefaults.color,font:chartDefaults.font,maxTicksLimit:8},grid:{color:chartDefaults.grid}},
+        y:{ticks:{color:chartDefaults.color,font:chartDefaults.font},grid:{color:chartDefaults.grid}}
+      }
+    }
+  });
+}
+
+function switchEq(mode,btn){
+  eqMode=mode;
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); drawEquity();
+}
+
+function drawPattern(){
+  const map={};
+  all.forEach(t=>{const k=t.pattern||'未標記'; if(!map[k]) map[k]={w:0,t:0,p:0}; map[k].t++;map[k].p+=(t.profit||0); if((t.profit||0)>0)map[k].w++;});
+  const labels=Object.keys(map);
+  const wr=labels.map(l=>parseFloat((map[l].w/map[l].t*100).toFixed(1)));
+  const pr=labels.map(l=>parseFloat(map[l].p.toFixed(2)));
+  const ctx=document.getElementById('cPattern').getContext('2d');
+  if(patChart) patChart.destroy();
+  patChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'勝率%',data:wr,backgroundColor:'rgba(193,127,62,0.18)',borderColor:'#c17f3e',borderWidth:1.5,borderRadius:4,yAxisID:'y'},
+      {label:'盈虧USD',data:pr,type:'line',borderColor:pr.map(p=>p>=0?'#2d6a4f':'#9b2335'),backgroundColor:'transparent',borderWidth:2,tension:0.35,pointRadius:3,pointBackgroundColor:pr.map(p=>p>=0?'#2d6a4f':'#9b2335'),yAxisID:'y2'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:chartDefaults.color,font:chartDefaults.font}},tooltip:{backgroundColor:'#faf8f4',titleColor:'#1a1814',bodyColor:'#3d3a35',borderColor:'#d8d2c8',borderWidth:1,padding:8}},
+      scales:{
+        x:{ticks:{color:chartDefaults.color,font:chartDefaults.font},grid:{color:chartDefaults.grid}},
+        y:{max:100,ticks:{color:chartDefaults.color,font:chartDefaults.font,callback:v=>v+'%'},grid:{color:chartDefaults.grid}},
+        y2:{position:'right',ticks:{color:chartDefaults.color,font:chartDefaults.font,callback:v=>'$'+v},grid:{display:false}}
+      }
+    }
+  });
+}
+
+// ── HEATMAP ──────────────────────────────
+function renderHeatmap(){
+  const days=['一','二','三','四','五'], dm={1:0,2:1,3:2,4:3,5:4};
+  const grid=Array(5).fill(null).map(()=>Array(24).fill(null).map(()=>({w:0,t:0})));
+  all.forEach(t=>{
+    if(!t.openTime) return;
+    const d=toTW(t.openTime), dow=d.getDay();
+    if(!dm.hasOwnProperty(dow)) return;
+    const cell=grid[dm[dow]][d.getHours()];
+    cell.t++; if((t.profit||0)>0) cell.w++;
+  });
+  let html='<div class="hmap">';
+  html+='<div class="hmap-h"></div>';
+  for(let h=0;h<24;h++) html+=`<div class="hmap-h">${h}</div>`;
+  days.forEach((day,i)=>{
+    html+=`<div class="hmap-day">${day}</div>`;
+    for(let h=0;h<24;h++){
+      const c=grid[i][h]; let bg='var(--cream2)',tip='無交易';
+      if(c.t>0){
+        const r=c.w/c.t;
+        if(r>=0.6) bg=`rgba(45,106,79,${0.15+r*0.55})`;
+        else if(r<=0.4) bg=`rgba(155,35,53,${0.12+(1-r)*0.45})`;
+        else bg='rgba(193,127,62,0.25)';
+        tip=`${c.t}筆 · 勝率${(r*100).toFixed(0)}%`;
+      }
+      html+=`<div class="hmap-cell" style="background:${bg}" title="${tip}"></div>`;
+    }
+  });
+  html+='</div>';
+  document.getElementById('hmapWrap').innerHTML=html;
+}
+
+// ── TABLE ─────────────────────────────────
+function sortBy(k){ if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=-1;} renderTbl(); }
+function resetTblFilters(){
+  ['tSym','tType','tPat'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tFrom').value='';
+  document.getElementById('tTo').value='';
+  renderTbl();
+}
+function renderTbl(){
+  const sym=document.getElementById('tSym').value;
+  const type=document.getElementById('tType').value;
+  const pat=document.getElementById('tPat').value;
+  const from=document.getElementById('tFrom').value;
+  const to=document.getElementById('tTo').value;
+  filtered=all.filter(t=>{
+    if(sym&&t.symbol!==sym) return false;
+    if(type&&t.type!==type) return false;
+    if(pat&&t.pattern!==pat) return false;
+    if(from&&t.closeTime&&t.closeTime.slice(0,10)<from) return false;
+    if(to&&t.closeTime&&t.closeTime.slice(0,10)>to) return false;
+    return true;
+  });
+  filtered.sort((a,b)=>{ let va=a[sortKey],vb=b[sortKey]; if(typeof va==='string') return sortDir*va.localeCompare(vb||''); return sortDir*((va||0)-(vb||0)); });
+  curPage=1; renderPage();
+}
+function renderPage(){
+  const start=(curPage-1)*perPage, data=filtered.slice(start,start+perPage);
+  const tbody=document.getElementById('tblBody');
+  tbody.innerHTML=data.map(t=>{
+    const p=t.profit||0, pc=p>0?'val-win':p<0?'val-loss':'';
+    const pip=t.pips!=null?t.pips.toFixed(1):'—';
+    const sgn=(n,d=2)=>(n>=0?'+':'')+n.toFixed(d);
+    return `
+      <tr onclick="toggleRow('${t.id}')">
+        <td style="color:var(--ink4);font-family:'DM Mono',monospace;font-size:0.72rem">${t.ticket||'—'}</td>
+        <td><strong>${t.symbol||'—'}</strong></td>
+        <td><span class="tag tag-${(t.type||'').toLowerCase()}">${t.type||'—'}</span></td>
+        <td style="font-family:'DM Mono',monospace">${t.lots??'—'}</td>
+        <td style="color:var(--ink3);font-size:0.75rem;font-family:'DM Mono',monospace">${fDT(t.openTime)}</td>
+        <td style="color:var(--ink3);font-size:0.75rem;font-family:'DM Mono',monospace">${fDT(t.closeTime)}</td>
+        <td class="${pc}" style="font-family:'DM Mono',monospace;font-weight:500">${p>=0?'+':''}${p.toFixed(2)}</td>
+        <td class="${pc}" style="font-family:'DM Mono',monospace">${pip}</td>
+        <td>${t.pattern?`<span class="tag tag-accent">${t.pattern}</span>`:'—'}</td>
+        <td style="color:var(--ink4)">${t.timeframe||'—'}</td>
+      </tr>
+      <tr class="expand-row" id="er-${t.id}">
+        <td class="expand-cell" colspan="10">
+          <div class="expand-inner" id="ei-${t.id}">
+            <div class="loading" style="padding:1.5rem"><div class="spin"></div>讀取中…</div>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+  if(!data.length) tbody.innerHTML='<tr><td colspan="10"><div class="empty">沒有符合的交易紀錄</div></td></tr>';
+  renderPg();
+}
+function renderPg(){
+  const total=Math.ceil(filtered.length/perPage);
+  const el=document.getElementById('pgBar');
+  if(total<=1){el.innerHTML='';return;}
+  let html=`<button class="pg-btn" onclick="goPg(${curPage-1})" ${curPage===1?'disabled':''}>‹</button>`;
+  for(let i=1;i<=total;i++){
+    if(i===1||i===total||Math.abs(i-curPage)<=2)
+      html+=`<button class="pg-btn ${i===curPage?'active':''}" onclick="goPg(${i})">${i}</button>`;
+    else if(Math.abs(i-curPage)===3) html+=`<span class="pg-info">…</span>`;
+  }
+  html+=`<button class="pg-btn" onclick="goPg(${curPage+1})" ${curPage===total?'disabled':''}>›</button>`;
+  html+=`<span class="pg-info">${filtered.length} 筆</span>`;
+  el.innerHTML=html;
+}
+function goPg(p){ const t=Math.ceil(filtered.length/perPage); if(p<1||p>t) return; curPage=p; renderPage(); }
+
+// ── EXPAND ───────────────────────────────
+async function toggleRow(id){
+  const row=document.getElementById(`er-${id}`);
+  if(openRow===id){ row.classList.remove('open'); openRow=null; return; }
+  if(openRow) document.getElementById(`er-${openRow}`)?.classList.remove('open');
+  openRow=id; row.classList.add('open');
+  const inner=document.getElementById(`ei-${id}`);
+  inner.innerHTML='<div class="loading" style="padding:1.5rem"><div class="spin"></div>讀取中…</div>';
+  try{
+    const blocks=await fetchBlocks(id);
+    const texts=[],imgs=[];
+    (blocks.results||[]).forEach(b=>{
+      if(b.type==='paragraph'&&b.paragraph?.rich_text?.length) texts.push(b.paragraph.rich_text.map(r=>r.plain_text).join(''));
+      if(b.type==='image'){ const u=b.image?.file?.url||b.image?.external?.url; if(u) imgs.push(u); }
+    });
+    const t=all.find(x=>x.id===id);
+    const meta=t?`<div class="expand-meta">
+      ${[['開倉價',t.openPrice?.toFixed(5)],['平倉價',t.closePrice?.toFixed(5)],['止損',t.sl?.toFixed(5)||'—'],['止盈',t.tp?.toFixed(5)||'—'],['持倉時間',t.openTime&&t.closeTime?fMin(holdMin(t.openTime,t.closeTime)):'—'],['週期',t.timeframe||'—'],['備註',t.comment||'—']].map(([l,v])=>`
+        <div class="emeta-item"><div class="el">${l}</div><div class="ev">${v||'—'}</div></div>`).join('')}
+    </div>`:'';
+    inner.innerHTML=`${meta}
+      <div class="expand-body">
+        <div>
+          <div class="expand-section-label">說明 / 筆記</div>
+          <div class="expand-note">${texts.join('\n')||t?.note||'（尚未填寫）'}</div>
+        </div>
+        <div>
+          <div class="expand-section-label">截圖</div>
+          ${imgs.length?`<div class="img-grid">${imgs.map(u=>`<img class="thumb" src="${u}" onclick="openLB('${u}',event)">`).join('')}</div>`:'<div style="color:var(--ink4);font-size:0.78rem;margin-top:0.35rem">（無截圖）</div>'}
+        </div>
+      </div>`;
+  }catch(e){ inner.innerHTML='<div style="color:var(--loss);padding:1rem;font-size:0.8rem">讀取失敗</div>'; }
+}
+
+// ── LIGHTBOX ─────────────────────────────
+function openLB(url,e){ e.stopPropagation(); document.getElementById('lbImg').src=url; document.getElementById('lb').classList.add('open'); }
+function closeLB(){ document.getElementById('lb').classList.remove('open'); }
+
+// ── NAV ──────────────────────────────────
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── INIT ─────────────────────────────────
+loadSettings();
+loadData();
+</script>
+</body>
+</html>
